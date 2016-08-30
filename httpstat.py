@@ -99,7 +99,11 @@ def main():
     out, err = p.communicate()
     if PY3:
         out, err = out.decode(), err.decode()
-    if p.returncode != 0:
+
+    # print stderr
+    if p.returncode == 0:
+        print(grayscale[16](err))
+    else:
         quit(yellow('curl error: {}'.format(err)), p.returncode)
 
     # parse output
