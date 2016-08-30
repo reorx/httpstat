@@ -76,7 +76,6 @@ def quit(s, code=0):
 
 
 def main():
-    # TODO check exit code
     args = sys.argv[1:]
     url = args[0]
     curl_args = args[1:]
@@ -100,12 +99,17 @@ def main():
     headerf.close()
 
     # run cmd
-    cmd = ['curl', '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', url]
+    cmd = ['curl', '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S', url]
     cmd += curl_args
-    output = subprocess.check_output(cmd)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    if PY3:
+        out, err = out.decode(), err.decode()
+    if p.returncode != 0:
+        quit(yellow('curl error: {}'.format(err)), p.returncode)
 
     # parse output
-    d = json.loads(output)
+    d = json.loads(out)
     for k in d:
         d[k] = int(d[k] * 1000)
 
