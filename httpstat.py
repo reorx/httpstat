@@ -1,4 +1,7 @@
 # coding: utf-8
+# References:
+# man curl
+# https://curl.haxx.se/libcurl/c/curl_easy_getinfo.html
 # https://curl.haxx.se/libcurl/c/easy_getinfo_options.html
 # http://blog.kenweiner.com/2014/11/http-request-timings-with-curl.html
 
