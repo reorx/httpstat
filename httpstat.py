@@ -104,6 +104,11 @@ def main():
     if p.returncode == 0:
         print(grayscale[16](err))
     else:
+        _cmd = list(cmd)
+        _cmd[2] = '<output-format>'
+        _cmd[4] = '<tempfile>'
+        _cmd[6] = '<tempfile>'
+        print('> {}'.format(' '.join(_cmd)))
         quit(yellow('curl error: {}'.format(err)), p.returncode)
 
     # parse output
