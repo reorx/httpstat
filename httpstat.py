@@ -1,4 +1,8 @@
 # coding: utf-8
+# https://curl.haxx.se/libcurl/c/easy_getinfo_options.html
+# http://blog.kenweiner.com/2014/11/http-request-timings-with-curl.html
+
+from __future__ import print_function
 
 import os
 import json
@@ -6,6 +10,11 @@ import sys
 import tempfile
 import subprocess
 
+
+PY3 = sys.version_info >= (3,)
+
+if PY3:
+    xrange = range
 
 ENV_SHOW_BODY = 'HTTPSTAT_SHOW_BODY'
 
@@ -62,7 +71,7 @@ grayscale = {(i - 232): make_color('38;5;' + str(i)) for i in xrange(232, 256)}
 
 
 def quit(s, code=0):
-    print s
+    print(s)
     sys.exit(code)
 
 
@@ -118,12 +127,12 @@ def main():
     for loop, line in enumerate(headers.split('\n')):
         if loop == 0:
             p1, p2 = tuple(line.split('/'))
-            print green(p1) + grayscale[14]('/') + cyan(p2)
+            print(green(p1) + grayscale[14]('/') + cyan(p2))
         else:
             pos = line.find(':')
-            print grayscale[14](line[:pos + 1]) + cyan(line[pos + 1:])
+            print(grayscale[14](line[:pos + 1]) + cyan(line[pos + 1:]))
 
-    print
+    print()
 
     # body
     show_body = os.environ.get(ENV_SHOW_BODY, 'false')
@@ -133,11 +142,11 @@ def main():
         with open(bodyf.name, 'r') as f:
             body = f.read().strip()
         if len(body) > body_limit:
-            print body[:body_limit] + '... (more in {})'.format(bodyf.name)
+            print(body[:body_limit] + '... (more in {})'.format(bodyf.name))
         else:
-            print body
+            print(body)
     else:
-        print '{} stored in: {}'.format(green('Body'), bodyf.name)
+        print('{} stored in: {}'.format(green('Body'), bodyf.name))
 
     # print stat
 
@@ -161,8 +170,8 @@ def main():
         b003=fmtb(d['time_starttransfer']),
         b004=fmtb(d['time_total']),
     )
-    print
-    print stat
+    print()
+    print(stat)
 
 
 if __name__ == '__main__':
