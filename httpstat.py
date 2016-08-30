@@ -7,6 +7,8 @@ import tempfile
 import subprocess
 
 
+ENV_SHOW_BODY = 'HTTPSTAT_SHOW_BODY'
+
 curl_format = """{
 "time_namelookup": %{time_namelookup},
 "time_connect": %{time_connect},
@@ -122,7 +124,20 @@ def main():
             print grayscale[14](line[:pos + 1]) + cyan(line[pos + 1:])
 
     print
-    print '{} stored in: {}'.format(green('Body'), bodyf.name)
+
+    # body
+    show_body = os.environ.get(ENV_SHOW_BODY, 'false')
+    show_body = 'true' in show_body.lower()
+    if show_body:
+        body_limit = 1024
+        with open(bodyf.name, 'r') as f:
+            body = f.read().strip()
+        if len(body) > body_limit:
+            print body[:body_limit] + '... (more in {})'.format(bodyf.name)
+        else:
+            print body
+    else:
+        print '{} stored in: {}'.format(green('Body'), bodyf.name)
 
     # print stat
 
