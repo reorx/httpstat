@@ -8,13 +8,13 @@ import subprocess
 
 
 curl_format = """{
-"time_namelookup": "%{time_namelookup}",
-"time_connect": "%{time_connect}",
-"time_appconnect": "%{time_appconnect}",
-"time_pretransfer": "%{time_pretransfer}",
-"time_redirect": "%{time_redirect}",
-"time_starttransfer": "%{time_starttransfer}",
-"time_total": "%{time_total}"
+"time_namelookup": %{time_namelookup},
+"time_connect": %{time_connect},
+"time_appconnect": %{time_appconnect},
+"time_pretransfer": %{time_pretransfer},
+"time_redirect": %{time_redirect},
+"time_starttransfer": %{time_starttransfer},
+"time_total": %{time_total}
 }"""
 
 https_template = """
@@ -59,8 +59,23 @@ underline = make_color(4)
 grayscale = {(i - 232): make_color('38;5;' + str(i)) for i in xrange(232, 256)}
 
 
+def quit(s, code=0):
+    print s
+    sys.exit(code)
+
+
 def main():
-    url = sys.argv[1]
+    # TODO check exit code
+    args = sys.argv[1:]
+    url = args[0]
+    curl_args = args[1:]
+
+    # check curl args
+    exclude_options = ['-w', '-D', '-o', '-s']
+    for i in exclude_options:
+        if i in curl_args:
+            quit(yellow('Error: {} is not allowed in extra curl args'.format(i)), 1)
+
     if url.startswith('https://'):
         template = https_template
     else:
@@ -75,12 +90,13 @@ def main():
 
     # run cmd
     cmd = ['curl', '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', url]
+    cmd += curl_args
     output = subprocess.check_output(cmd)
 
     # parse output
     d = json.loads(output)
     for k in d:
-        d[k] = int(float(d[k]) * 1000)
+        d[k] = int(d[k] * 1000)
 
     # calculate ranges
     d.update(
