@@ -94,8 +94,7 @@ def main():
     headerf.close()
 
     # run cmd
-    cmd = ['curl', '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S', url]
-    cmd += curl_args
+    cmd = ['curl', '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S'] + curl_args + [url]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     if PY3:
