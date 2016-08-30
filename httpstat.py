@@ -86,11 +86,6 @@ def main():
         if i in curl_args:
             quit(yellow('Error: {} is not allowed in extra curl args'.format(i)), 1)
 
-    if url.startswith('https://'):
-        template = https_template
-    else:
-        template = http_template
-
     # tempfile for output
     bodyf = tempfile.NamedTemporaryFile(delete=False)
     bodyf.close()
@@ -125,7 +120,7 @@ def main():
     # print header & body summary
     with open(headerf.name, 'r') as f:
         headers = f.read().strip()
-    # remote header file
+    # remove header file
     os.remove(headerf.name)
 
     for loop, line in enumerate(headers.split('\n')):
@@ -153,6 +148,15 @@ def main():
         print('{} stored in: {}'.format(green('Body'), bodyf.name))
 
     # print stat
+    if url.startswith('https://'):
+        template = https_template
+    else:
+        template = http_template
+
+    # colorize template first line
+    tpl_parts = template.split('\n')
+    tpl_parts[0] = grayscale[14](tpl_parts[0])
+    template = '\n'.join(tpl_parts)
 
     def fmta(s):
         return cyan('{:>4}ms'.format(s))
