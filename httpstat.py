@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import functools
 import json
 import sys
 import subprocess
@@ -27,24 +26,34 @@ https_template = """
                                                                                  total:{b004}
 """[1:]
 
-
-def wide(s, width=10, align='left'):
-    if align == 'left':
-        sign = '<'
-    else:
-        sign = '>'
-    tpl = '{:%s%s}' % (sign, width)
-    return tpl.format(s)
+http_template = """
+  DNS Lookup   TCP Connection   Server Processing   Content Transfer
+[   {a000}   |    {a001}      |      {a003}       |     {a004}       ]
+             |                |                   |                  |
+    namelookup:{b000}         |                   |                  |
+                        connect:{b001}            |                  |
+                                      starttransfer:{b003}           |
+                                                                 total:{b004}
+"""[1:]
 
 
 if __name__ == '__main__':
     url = sys.argv[1]
+    if url.startswith('https://'):
+        template = https_template
+    else:
+        template = http_template
+
+    # run cmd
     cmd = ['curl', '-w', curl_format, '-o', '/dev/null', '-s', url]
     output = subprocess.check_output(cmd)
 
+    # parse output
     d = json.loads(output)
     for k in d:
         d[k] = int(float(d[k]) * 1000)
+
+    # calculate ranges
     d.update(
         range_dns=d['time_namelookup'],
         range_connection=d['time_connect'] - d['time_namelookup'],
@@ -53,23 +62,25 @@ if __name__ == '__main__':
         range_transfer=d['time_total'] - d['time_starttransfer'],
     )
 
-    unit = 'ms'
+    def fmta(s):
+        return '{:>4}ms'.format(s)
 
-    def _unit(s):
-        return str(s) + unit
+    def fmtb(s):
+        return '{:<6}'.format(str(s) + 'ms')
 
-    wide6l = functools.partial(wide, width=6, align='left')
-    wide6r = functools.partial(wide, width=6, align='right')
-    rs = https_template.format(
-        a000=wide6r(_unit(d['range_dns'])),
-        a001=wide6r(_unit(d['range_connection'])),
-        a002=wide6r(_unit(d['range_ssl'])),
-        a003=wide6r(_unit(d['range_server'])),
-        a004=wide6r(_unit(d['range_transfer'])),
-        b000=wide6l(_unit(d['time_namelookup'])),
-        b001=wide6l(_unit(d['time_connect'])),
-        b002=wide6l(_unit(d['time_pretransfer'])),
-        b003=wide6l(_unit(d['time_starttransfer'])),
-        b004=wide6l(_unit(d['time_total'])),
+    # render result
+    rs = template.format(
+        # a
+        a000=fmta(d['range_dns']),
+        a001=fmta(d['range_connection']),
+        a002=fmta(d['range_ssl']),
+        a003=fmta(d['range_server']),
+        a004=fmta(d['range_transfer']),
+        # b
+        b000=fmtb(d['time_namelookup']),
+        b001=fmtb(d['time_connect']),
+        b002=fmtb(d['time_pretransfer']),
+        b003=fmtb(d['time_starttransfer']),
+        b004=fmtb(d['time_total']),
     )
     print rs
