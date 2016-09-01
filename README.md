@@ -16,13 +16,13 @@ Just pass a url with it:
 python httpstat.py httpbin.org/get
 ```
 
-By default it will write response body in a tempfile, but you can print it out by setting `HTTPSTAT_SHOW_BODY=true`:
+By default it will write response body in a tempfile, but you can let it print out by setting `HTTPSTAT_SHOW_BODY=true`:
 
 ```bash
 HTTPSTAT_SHOW_BODY=true python httpstat.py httpbin.org/get
 ```
 
-You can pass any curl supported arguments after the url (except for `-w`, `-D`, `-o`, `-s` which are already used by httpstat):
+You can pass any curl supported arguments after the url (except for `-w`, `-D`, `-o`, `-s`, `-S` which are already used by httpstat):
 
 ```bash
 HTTPSTAT_SHOW_BODY=true python httpstat.py httpbin.org/post -X POST --data-urlencode "a=中文" -v
