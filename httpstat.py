@@ -74,7 +74,8 @@ grayscale = {(i - 232): make_color('38;5;' + str(i)) for i in xrange(232, 256)}
 
 
 def quit(s, code=0):
-    print(s)
+    if s is not None:
+        print(s)
     sys.exit(code)
 
 
@@ -115,7 +116,12 @@ def main():
         quit(yellow('curl error: {}'.format(err)), p.returncode)
 
     # parse output
-    d = json.loads(out)
+    try:
+        d = json.loads(out)
+    except ValueError as e:
+        print(yellow('Could not decode json: {}'.format(e)))
+        print('curl result:', p.returncode, grayscale[16](out), grayscale[16](err))
+        quit(None, 1)
     for k in d:
         d[k] = int(d[k] * 1000)
 
