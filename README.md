@@ -7,6 +7,10 @@ curl statistics made simple.
 
 httpstat is a **single file🌟** Python script that has **no dependency👏** and is compatible with **Python 3🍻**.
 
+> httpstat is designed to be a single file script so that it could be used
+> or ported easily in any platform, but if you really like it and want
+> to install `httpstat` as a command, well, here you go: `pip install httpstat`
+
 
 ## Usage
 
