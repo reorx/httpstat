@@ -14,7 +14,7 @@ import tempfile
 import subprocess
 
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 
 PY3 = sys.version_info >= (3,)
@@ -121,7 +121,7 @@ def main():
         quit(None, 0)
     elif url == '--version':
         print('httpstat {}'.format(__version__))
-        #quit(None, 0)
+        quit(None, 0)
 
     curl_args = args[1:]
 
