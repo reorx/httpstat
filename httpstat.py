@@ -33,23 +33,23 @@ curl_format = """{
 
 https_template = """
   DNS Lookup   TCP Connection   SSL Handshake   Server Processing   Content Transfer
-[   {a000}   |    {a001}      |     {a002}    |      {a003}       |     {a004}       ]
+[   {a0000}  |     {a0001}    |    {a0002}    |      {a0003}      |      {a0004}     ]
              |                |               |                   |                  |
-    namelookup:{b000}         |               |                   |                  |
-                        connect:{b001}        |                   |                  |
-                                    pretransfer:{b002}            |                  |
-                                                      starttransfer:{b003}           |
-                                                                                 total:{b004}
+    namelookup:{b0000}        |               |                   |                  |
+                        connect:{b0001}       |                   |                  |
+                                    pretransfer:{b0002}           |                  |
+                                                      starttransfer:{b0003}          |
+                                                                                 total:{b0004}
 """[1:]
 
 http_template = """
   DNS Lookup   TCP Connection   Server Processing   Content Transfer
-[   {a000}   |    {a001}      |      {a003}       |     {a004}       ]
+[   {a0000}  |     {a0001}    |      {a0003}      |      {a0004}     ]
              |                |                   |                  |
-    namelookup:{b000}         |                   |                  |
-                        connect:{b001}            |                  |
-                                      starttransfer:{b003}           |
-                                                                 total:{b004}
+    namelookup:{b0000}        |                   |                  |
+                        connect:{b0001}           |                  |
+                                      starttransfer:{b0003}          |
+                                                                 total:{b0004}
 """[1:]
 
 
@@ -170,24 +170,24 @@ def main():
     template = '\n'.join(tpl_parts)
 
     def fmta(s):
-        return cyan('{:>4}ms'.format(s))
+        return cyan('{:^7}'.format(str(s) + 'ms'))
 
     def fmtb(s):
-        return cyan('{:<6}'.format(str(s) + 'ms'))
+        return cyan('{:<7}'.format(str(s) + 'ms'))
 
     stat = template.format(
         # a
-        a000=fmta(d['range_dns']),
-        a001=fmta(d['range_connection']),
-        a002=fmta(d['range_ssl']),
-        a003=fmta(d['range_server']),
-        a004=fmta(d['range_transfer']),
+        a0000=fmta(d['range_dns']),
+        a0001=fmta(d['range_connection']),
+        a0002=fmta(d['range_ssl']),
+        a0003=fmta(d['range_server']),
+        a0004=fmta(d['range_transfer']),
         # b
-        b000=fmtb(d['time_namelookup']),
-        b001=fmtb(d['time_connect']),
-        b002=fmtb(d['time_pretransfer']),
-        b003=fmtb(d['time_starttransfer']),
-        b004=fmtb(d['time_total']),
+        b0000=fmtb(d['time_namelookup']),
+        b0001=fmtb(d['time_connect']),
+        b0002=fmtb(d['time_pretransfer']),
+        b0003=fmtb(d['time_starttransfer']),
+        b0004=fmtb(d['time_total']),
     )
     print()
     print(stat)
