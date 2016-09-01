@@ -14,6 +14,9 @@ import tempfile
 import subprocess
 
 
+__version__ = '1.0.0'
+
+
 PY3 = sys.version_info >= (3,)
 
 if PY3:
@@ -79,9 +82,43 @@ def quit(s, code=0):
     sys.exit(code)
 
 
+def print_help():
+    help = """
+Usage: httpstat URL [CURL_OPTIONS]
+       httpstat -h | --help
+       httpstat --version
+
+Arguments:
+  URL     url to request, could be with or without `http(s)://` prefix
+
+Options:
+  CURL_OPTIONS  any curl supported options, except for -w -D -o -S -s,
+                which are already used internally.
+  -h --help     show this screen.
+  --version     show version.
+
+Environments:
+  HTTPSTAT_SHOW_BODY    By default httpstat will write response body
+                        in a tempfile, but you can let it print out by setting
+                        this variable to `true`.
+"""[1:-1]
+    print(help)
+
+
 def main():
     args = sys.argv[1:]
+    if not args:
+        print_help()
+        quit(None, 0)
+
     url = args[0]
+    if url in ['-h', '--help']:
+        print_help()
+        quit(None, 0)
+    elif url == '--version':
+        print('httpstat {}'.format(__version__))
+        #quit(None, 0)
+
     curl_args = args[1:]
 
     # check curl args
@@ -99,6 +136,7 @@ def main():
 
     # run cmd
     cmd = ['curl', '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S'] + curl_args + [url]
+    #print(cmd)
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     if PY3:
@@ -172,7 +210,7 @@ def main():
 
     # colorize template first line
     tpl_parts = template.split('\n')
-    tpl_parts[0] = grayscale[14](tpl_parts[0])
+    tpl_parts[0] = grayscale[16](tpl_parts[0])
     template = '\n'.join(tpl_parts)
 
     def fmta(s):
