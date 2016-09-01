@@ -32,7 +32,7 @@ curl_format = """{
 }"""
 
 https_template = """
-  DNS Lookup   TCP Connection   SSL handshake   Server Processing   Content Transfer
+  DNS Lookup   TCP Connection   SSL Handshake   Server Processing   Content Transfer
 [   {a000}   |    {a001}      |     {a002}    |      {a003}       |     {a004}       ]
              |                |               |                   |                  |
     namelookup:{b000}         |               |                   |                  |
