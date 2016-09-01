@@ -23,6 +23,7 @@ if PY3:
     xrange = range
 
 ENV_SHOW_BODY = 'HTTPSTAT_SHOW_BODY'
+ENV_SHOW_SPEED = 'HTTPSTAT_SHOW_SPEED'
 
 curl_format = """{
 "time_namelookup": %{time_namelookup},
@@ -31,7 +32,9 @@ curl_format = """{
 "time_pretransfer": %{time_pretransfer},
 "time_redirect": %{time_redirect},
 "time_starttransfer": %{time_starttransfer},
-"time_total": %{time_total}
+"time_total": %{time_total},
+"speed_download": %{speed_download},
+"speed_upload": %{speed_upload}
 }"""
 
 https_template = """
@@ -101,6 +104,7 @@ Environments:
   HTTPSTAT_SHOW_BODY    By default httpstat will write response body
                         in a tempfile, but you can let it print out by setting
                         this variable to `true`.
+  HTTPSTAT_SHOW_SPEED   set to `true` to show download and upload speed.
 """[1:-1]
     print(help)
 
@@ -161,7 +165,8 @@ def main():
         print('curl result:', p.returncode, grayscale[16](out), grayscale[16](err))
         quit(None, 1)
     for k in d:
-        d[k] = int(d[k] * 1000)
+        if k.startswith('time_'):
+            d[k] = int(d[k] * 1000)
 
     # calculate ranges
     d.update(
@@ -235,6 +240,13 @@ def main():
     )
     print()
     print(stat)
+
+    # speed, originally bytes per second
+    show_speed = os.environ.get(ENV_SHOW_SPEED, 'false')
+    show_speed = 'true' in show_speed.lower()
+    if show_speed:
+        print('speed_download: {:.1f} KiB, speed_upload: {:.1f} KiB'.format(
+            d['speed_download'] / 1024, d['speed_upload'] / 1024))
 
 
 if __name__ == '__main__':
