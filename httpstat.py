@@ -14,7 +14,7 @@ import tempfile
 import subprocess
 
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 
 
 PY3 = sys.version_info >= (3,)
@@ -139,9 +139,14 @@ def main():
     headerf.close()
 
     # run cmd
-    cmd = ['curl', '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S'] + curl_args + [url]
+    cmd_env = os.environ.copy()
+    cmd_env.update(
+        LC_ALL='C',
+    )
+    cmd_core = ['curl', '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S']
+    cmd = cmd_core + curl_args + [url]
     #print(cmd)
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=cmd_env)
     out, err = p.communicate()
     if PY3:
         out, err = out.decode(), err.decode()
