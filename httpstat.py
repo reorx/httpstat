@@ -60,8 +60,13 @@ http_template = """
 """[1:]
 
 
+ISATTY = sys.stdout.isatty()
+
+
 def make_color(code):
     def color_func(s):
+        if not ISATTY:
+            return s
         tpl = '\x1b[{}m{}\x1b[0m'
         return tpl.format(code, s)
     return color_func
