@@ -15,7 +15,7 @@ import tempfile
 import subprocess
 
 
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 
 PY3 = sys.version_info >= (3,)
