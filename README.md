@@ -12,9 +12,11 @@ httpstat is a **single file🌟** Python script that has **no dependency👏** a
 
 There are three ways to get `httpstat`:
 
-1. Download the script directly: `wget https://raw.githubusercontent.com/reorx/httpstat/master/httpstat.py`
-2. Install through pip: `pip install httpstat`
-3. Install through homebrew (macOS only): `brew install httpstat`
+- Download the script directly: `wget https://raw.githubusercontent.com/reorx/httpstat/master/httpstat.py`
+
+- Install through pip: `pip install httpstat`
+
+- Install through homebrew (macOS only): `brew install httpstat`
 
 
 ## Usage
