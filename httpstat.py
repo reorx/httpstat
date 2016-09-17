@@ -72,12 +72,12 @@ def make_color(code):
     return color_func
 
 
-red = make_color(31)
-green = make_color(32)
-yellow = make_color(33)
-blue = make_color(34)
-magenta = make_color(35)
-cyan = make_color(36)
+red = make_color(30)
+green = make_color(37)
+yellow = make_color(35)
+blue = make_color(36)
+magenta = make_color(53)
+cyan = make_color(24)
 
 bold = make_color(1)
 underline = make_color(4)
