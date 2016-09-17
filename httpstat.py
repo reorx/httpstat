@@ -205,7 +205,7 @@ def main():
     print()
 
     # body
-    show_body = os.environ.get(ENV_SHOW_BODY, 'true')
+    show_body = os.environ.get(ENV_SHOW_BODY, 'false')
     show_body = 'true' in show_body.lower()
     if show_body:
         body_limit = 1024
