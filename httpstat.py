@@ -132,7 +132,12 @@ def main():
     curl_args = args[1:]
 
     # check curl args
-    exclude_options = ['-w', '-D', '-o', '-s']
+    exclude_options = [
+        '-w', '--write-out',
+        '-D', '--dump-header',
+        '-o', '--output',
+        '-s', '--silent',
+    ]
     for i in exclude_options:
         if i in curl_args:
             quit(yellow('Error: {} is not allowed in extra curl args'.format(i)), 1)
