@@ -27,6 +27,8 @@ Just pass a url with it:
 python httpstat.py httpbin.org/get
 ```
 
+> If installed through pip or brew, you can use `httpstat` as a command instead of `python httpstat.py`.
+
 By default it will write response body in a tempfile, but you can let it print out by setting `HTTPSTAT_SHOW_BODY=true`:
 
 ```bash
