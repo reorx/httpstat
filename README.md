@@ -24,7 +24,7 @@ There are three ways to get `httpstat`:
 Just pass a url with it:
 
 ```bash
-python httpstat.py httpbin.org/get
+python -m httpstat httpbin.org/get
 ```
 
 By default it will write response body in a tempfile, but you can let it print out by setting `HTTPSTAT_SHOW_BODY=true`:
