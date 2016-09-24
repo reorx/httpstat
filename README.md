@@ -7,6 +7,10 @@ curl statistics made simple.
 
 httpstat is a **single file🌟** Python script that has **no dependency👏** and is compatible with **Python 3🍻**.
 
+> Be sure to check @davecheney's implementation: [davecheney/httpstat](https://github.com/davecheney/httpstat)
+> which is purely written in Go. Not like this one, it's absolutely independent, could be run
+> even you don't have `curl(1)` or `python(1)`!
+
 
 ## Installation
 
