@@ -2,7 +2,7 @@
 
 ![screenshot](screenshot.png)
 
-httpstat visualize `curl(1)` statistics in a way of beauty and clarity.
+httpstat visualizes `curl(1)` statistics in a way of beauty and clarity.
 
 It is a **single file🌟** Python script that has **no dependency👏** and is compatible with **Python 3🍻**.
 
