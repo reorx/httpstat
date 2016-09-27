@@ -1,15 +1,10 @@
 # httpstat
 
-curl statistics made simple.
-
 ![screenshot](screenshot.png)
 
+httpstat visualize `curl(1)` statistics in a way of beauty and clarity.
 
-httpstat is a **single file🌟** Python script that has **no dependency👏** and is compatible with **Python 3🍻**.
-
-> Be sure to check @davecheney's implementation: [davecheney/httpstat](https://github.com/davecheney/httpstat)
-> which is purely written in Go. Not like this one, it's absolutely independent, could be run
-> even you don't have `curl(1)` or `python(1)`!
+It is a **single file🌟** Python script that has **no dependency👏** and is compatible with **Python 3🍻**.
 
 
 ## Installation
@@ -44,3 +39,9 @@ You can pass any curl supported arguments after the url (except for `-w`, `-D`, 
 ```bash
 HTTPSTAT_SHOW_BODY=true python httpstat.py httpbin.org/post -X POST --data-urlencode "a=中文" -v
 ```
+
+## Related Projects
+
+- [davecheney/httpstat](https://github.com/davecheney/httpstat)
+
+  Written in pure Go, this one could run even if you don't have `curl(1)` or `python(1)`.
