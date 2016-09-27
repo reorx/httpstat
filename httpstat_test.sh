@@ -30,3 +30,4 @@ LC_ALL=ru_RU runboth httpbin.org
 LC_ALL=ru_RU runboth https://reorx.com
 HTTPSTAT_SHOW_BODY="true" runboth "httpbin.org/get" -G --data-urlencode "a=中文" -v
 HTTPSTAT_SHOW_BODY="true" runboth "httpbin.org/post" -X POST --data-urlencode "a=中文" -v
+HTTPSTAT_SAVE_BODY="false" runboth httpbin.org

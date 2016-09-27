@@ -24,6 +24,7 @@ if PY3:
     xrange = range
 
 ENV_SHOW_BODY = 'HTTPSTAT_SHOW_BODY'
+ENV_SAVE_BODY = 'HTTPSTAT_SAVE_BODY'
 ENV_SHOW_SPEED = 'HTTPSTAT_SHOW_SPEED'
 
 curl_format = """{
@@ -209,9 +210,14 @@ def main():
 
     print()
 
+    def str_to_boolean(str):
+        return 'true' in str.lower()
+
     # body
+    save_body = os.environ.get(ENV_SAVE_BODY, 'true');
+    save_body = str_to_boolean(save_body.lower())
     show_body = os.environ.get(ENV_SHOW_BODY, 'false')
-    show_body = 'true' in show_body.lower()
+    show_body = str_to_boolean(show_body.lower())
     if show_body:
         body_limit = 1024
         with open(bodyf.name, 'r') as f:
@@ -221,7 +227,11 @@ def main():
         else:
             print(body)
     else:
-        print('{} stored in: {}'.format(green('Body'), bodyf.name))
+        if save_body:
+            print('{} stored in: {}'.format(green('Body'), bodyf.name))
+
+    if not save_body:
+        os.remove(bodyf.name);
 
     # print stat
     if url.startswith('https://'):
