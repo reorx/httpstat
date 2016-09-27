@@ -11,6 +11,7 @@ from __future__ import print_function
 import os
 import json
 import sys
+import logging
 import tempfile
 import subprocess
 
@@ -23,8 +24,20 @@ PY3 = sys.version_info >= (3,)
 if PY3:
     xrange = range
 
-ENV_SHOW_BODY = 'HTTPSTAT_SHOW_BODY'
-ENV_SHOW_SPEED = 'HTTPSTAT_SHOW_SPEED'
+
+class Env(object):
+    prefix = 'HTTPSTAT'
+
+    def __init__(self, key):
+        self.key = key.format(prefix=self.prefix)
+
+    def get(self, default=None):
+        return os.environ.get(self.key, default)
+
+ENV_SHOW_BODY = Env('{prefix}_SHOW_BODY')
+ENV_SHOW_SPEED = Env('{prefix}_SHOW_SPEED')
+ENV_CURL_BIN = Env('{prefix}_CURL_BIN')
+ENV_DEBUG = Env('{prefix}_DEBUG')
 
 curl_format = """{
 "time_namelookup": %{time_namelookup},
@@ -121,6 +134,39 @@ def main():
         print_help()
         quit(None, 0)
 
+    # get envs
+    show_body = 'true' in ENV_SHOW_BODY.get('false').lower()
+    show_speed = 'true'in ENV_SHOW_SPEED.get('false').lower()
+    curl_bin = ENV_CURL_BIN.get('curl')
+    is_debug = 'true' in ENV_DEBUG.get('false').lower()
+
+    # configure logging
+    if is_debug:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+    logging.basicConfig(level=log_level)
+    lg = logging.getLogger('httpstat')
+
+    # log envs
+    lg.debug(
+        'ENVs:\n'
+        '  {show_body_key}: {show_body}\n'
+        '  {show_speed_key}: {show_speed}\n'
+        '  {curl_bin_key}: {curl_bin}\n'
+        '  {is_debug_key}: {is_debug}\n'.format(
+            show_body_key=ENV_SHOW_BODY.key,
+            show_body=show_body,
+            show_speed_key=ENV_SHOW_SPEED.key,
+            show_speed=show_speed,
+            curl_bin_key=ENV_CURL_BIN.key,
+            curl_bin=curl_bin,
+            is_debug_key=ENV_DEBUG.key,
+            is_debug=is_debug,
+        )
+    )
+
+    # get url
     url = args[0]
     if url in ['-h', '--help']:
         print_help()
@@ -154,9 +200,9 @@ def main():
     cmd_env.update(
         LC_ALL='C',
     )
-    cmd_core = ['curl', '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S']
+    cmd_core = [curl_bin, '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S']
     cmd = cmd_core + curl_args + [url]
-    #print(cmd)
+    lg.debug('cmd: %s', cmd)
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=cmd_env)
     out, err = p.communicate()
     if PY3:
@@ -210,8 +256,6 @@ def main():
     print()
 
     # body
-    show_body = os.environ.get(ENV_SHOW_BODY, 'false')
-    show_body = 'true' in show_body.lower()
     if show_body:
         body_limit = 1024
         with open(bodyf.name, 'r') as f:
@@ -258,10 +302,8 @@ def main():
     print(stat)
 
     # speed, originally bytes per second
-    show_speed = os.environ.get(ENV_SHOW_SPEED, 'false')
-    show_speed = 'true' in show_speed.lower()
     if show_speed:
-        print('speed_download: {:.1f} KiB, speed_upload: {:.1f} KiB'.format(
+        print('speed_download: {:.1f} KiB/s, speed_upload: {:.1f} KiB/s'.format(
             d['speed_download'] / 1024, d['speed_upload'] / 1024))
 
 
