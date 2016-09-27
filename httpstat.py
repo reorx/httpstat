@@ -261,7 +261,10 @@ def main():
         with open(bodyf.name, 'r') as f:
             body = f.read().strip()
         if len(body) > body_limit:
-            print(body[:body_limit] + '... (more in {})'.format(bodyf.name))
+            print(body[:body_limit] + cyan('...'))
+            print()
+            print('{} is truncated ({} out of {}), stored in: {}'.format(
+                green('Body'), body_limit, len(body), bodyf.name))
         else:
             print(body)
     else:
