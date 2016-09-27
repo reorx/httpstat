@@ -36,6 +36,7 @@ class Env(object):
 
 ENV_SHOW_BODY = Env('{prefix}_SHOW_BODY')
 ENV_SHOW_SPEED = Env('{prefix}_SHOW_SPEED')
+ENV_SAVE_BODY = Env('{prefix}_SAVE_BODY')
 ENV_CURL_BIN = Env('{prefix}_CURL_BIN')
 ENV_DEBUG = Env('{prefix}_DEBUG')
 
@@ -137,6 +138,7 @@ def main():
     # get envs
     show_body = 'true' in ENV_SHOW_BODY.get('false').lower()
     show_speed = 'true'in ENV_SHOW_SPEED.get('false').lower()
+    save_body = 'true' in ENV_SAVE_BODY.get('true').lower()
     curl_bin = ENV_CURL_BIN.get('curl')
     is_debug = 'true' in ENV_DEBUG.get('false').lower()
 
@@ -153,16 +155,14 @@ def main():
         'ENVs:\n'
         '  {show_body_key}: {show_body}\n'
         '  {show_speed_key}: {show_speed}\n'
+        '  {save_body_key}: {save_body}\n'
         '  {curl_bin_key}: {curl_bin}\n'
         '  {is_debug_key}: {is_debug}\n'.format(
-            show_body_key=ENV_SHOW_BODY.key,
-            show_body=show_body,
-            show_speed_key=ENV_SHOW_SPEED.key,
-            show_speed=show_speed,
-            curl_bin_key=ENV_CURL_BIN.key,
-            curl_bin=curl_bin,
-            is_debug_key=ENV_DEBUG.key,
-            is_debug=is_debug,
+            show_body_key=ENV_SHOW_BODY.key, show_body=show_body,
+            show_speed_key=ENV_SHOW_SPEED.key, show_speed=show_speed,
+            save_body_key=ENV_SAVE_BODY.key, save_body=save_body,
+            curl_bin_key=ENV_CURL_BIN.key, curl_bin=curl_bin,
+            is_debug_key=ENV_DEBUG.key, is_debug=is_debug,
         )
     )
 
