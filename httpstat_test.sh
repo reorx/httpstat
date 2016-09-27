@@ -28,5 +28,7 @@ function runboth() {
 
 LC_ALL=ru_RU runboth httpbin.org
 LC_ALL=ru_RU runboth https://reorx.com
+HTTPSTAT_DEBUG=true HTTPSTAT_SHOW_SPEED=true runboth httpbin.org
+HTTPSTAT_CURL_BIN=/usr/bin/curl runboth httpbin.org
 HTTPSTAT_SHOW_BODY="true" runboth "httpbin.org/get" -G --data-urlencode "a=中文" -v
 HTTPSTAT_SHOW_BODY="true" runboth "httpbin.org/post" -X POST --data-urlencode "a=中文" -v
