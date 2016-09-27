@@ -181,7 +181,7 @@ def main():
     cmd_env.update(
         LC_ALL='C',
     )
-    cmd_core = ['curl', '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S']
+    cmd_core = [curl_bin, '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S']
     cmd = cmd_core + curl_args + [url]
     lg.debug('cmd: %s', cmd)
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=cmd_env)
