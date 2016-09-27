@@ -148,6 +148,25 @@ def main():
     logging.basicConfig(level=log_level)
     lg = logging.getLogger('httpstat')
 
+    # log envs
+    lg.debug(
+        'ENVs:\n'
+        '  {show_body_key}: {show_body}\n'
+        '  {show_speed_key}: {show_speed}\n'
+        '  {curl_bin_key}: {curl_bin}\n'
+        '  {is_debug_key}: {is_debug}\n'.format(
+            show_body_key=ENV_SHOW_BODY.key,
+            show_body=show_body,
+            show_speed_key=ENV_SHOW_SPEED.key,
+            show_speed=show_speed,
+            curl_bin_key=ENV_CURL_BIN.key,
+            curl_bin=curl_bin,
+            is_debug_key=ENV_DEBUG.key,
+            is_debug=is_debug,
+        )
+    )
+
+    # get url
     url = args[0]
     if url in ['-h', '--help']:
         print_help()
