@@ -23,8 +23,20 @@ PY3 = sys.version_info >= (3,)
 if PY3:
     xrange = range
 
-ENV_SHOW_BODY = 'HTTPSTAT_SHOW_BODY'
-ENV_SHOW_SPEED = 'HTTPSTAT_SHOW_SPEED'
+
+class Env(object):
+    prefix = 'HTTPSTAT'
+
+    def __init__(self, key):
+        self.key = key.format(prefix=self.prefix)
+
+    def get(self, default=None):
+        return os.environ.get(self.key, default)
+
+ENV_SHOW_BODY = Env('{prefix}_SHOW_BODY')
+ENV_SHOW_SPEED = Env('{prefix}_SHOW_SPEED')
+ENV_CURL_BIN = Env('{prefix}_CURL_BIN')
+ENV_DEBUG = Env('{prefix}_DEBUG')
 
 curl_format = """{
 "time_namelookup": %{time_namelookup},
