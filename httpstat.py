@@ -11,6 +11,7 @@ from __future__ import print_function
 import os
 import json
 import sys
+import logging
 import tempfile
 import subprocess
 
@@ -138,6 +139,15 @@ def main():
     show_speed = 'true'in ENV_SHOW_SPEED.get('false').lower()
     curl_bin = ENV_CURL_BIN.get('curl')
     is_debug = 'true' in ENV_DEBUG.get('false').lower()
+
+    # configure logging
+    if is_debug:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+    logging.basicConfig(level=log_level)
+    lg = logging.getLogger('httpstat')
+
     url = args[0]
     if url in ['-h', '--help']:
         print_help()
@@ -173,7 +183,7 @@ def main():
     )
     cmd_core = ['curl', '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S']
     cmd = cmd_core + curl_args + [url]
-    #print(cmd)
+    lg.debug('cmd: %s', cmd)
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=cmd_env)
     out, err = p.communicate()
     if PY3:
