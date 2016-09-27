@@ -133,6 +133,11 @@ def main():
         print_help()
         quit(None, 0)
 
+    # get envs
+    show_body = 'true' in ENV_SHOW_BODY.get('false').lower()
+    show_speed = 'true'in ENV_SHOW_SPEED.get('false').lower()
+    curl_bin = ENV_CURL_BIN.get('curl')
+    is_debug = 'true' in ENV_DEBUG.get('false').lower()
     url = args[0]
     if url in ['-h', '--help']:
         print_help()
@@ -222,8 +227,6 @@ def main():
     print()
 
     # body
-    show_body = os.environ.get(ENV_SHOW_BODY, 'false')
-    show_body = 'true' in show_body.lower()
     if show_body:
         body_limit = 1024
         with open(bodyf.name, 'r') as f:
@@ -270,8 +273,6 @@ def main():
     print(stat)
 
     # speed, originally bytes per second
-    show_speed = os.environ.get(ENV_SHOW_SPEED, 'false')
-    show_speed = 'true' in show_speed.lower()
     if show_speed:
         print('speed_download: {:.1f} KiB, speed_upload: {:.1f} KiB'.format(
             d['speed_download'] / 1024, d['speed_upload'] / 1024))
