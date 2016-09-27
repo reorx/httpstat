@@ -13,9 +13,9 @@ There are three ways to get `httpstat`:
 
 - Download the script directly: `wget https://raw.githubusercontent.com/reorx/httpstat/master/httpstat.py`
 
-- Install through pip: `pip install httpstat`
+- Through pip: `pip install httpstat`
 
-- Install through homebrew (macOS only): `brew install httpstat`
+- Through homebrew (macOS only): `brew install httpstat`
 
 
 ## Usage
@@ -42,6 +42,18 @@ HTTPSTAT_SHOW_BODY=true python httpstat.py httpbin.org/post -X POST --data-urlen
 
 ## Related Projects
 
-- [davecheney/httpstat](https://github.com/davecheney/httpstat)
+- Bash: [b4b4r07/httpstat](https://github.com/b4b4r07/httpstat)
 
-  Written in pure Go, this one could run even if you don't have `curl(1)` or `python(1)`.
+  This is what exactly I want to do at the very beginning, but gave up due to not confident in my bash skill, good job!
+
+- Node: [yosuke-furukawa/httpstat](https://github.com/yosuke-furukawa/httpstat)
+
+  [b4b4r07](https://twitter.com/b4b4r07) mentioned this in his [article](http://www.tellme.tokyo/entry/2016/09/25/213810), could be used as a HTTP client also.
+
+- Go: [davecheney/httpstat](https://github.com/davecheney/httpstat)
+
+  I'm practicing Go recently, it's happy to read and learn from this one.
+
+- Go (library): [tcnksm/go-httpstat](https://github.com/tcnksm/go-httpstat)
+
+  Other than being a cli tool, this project is used as library to help debugging latency of HTTP requests in Go code, very thoughtful and useful, see more in this [article](https://medium.com/@deeeet/trancing-http-request-latency-in-golang-65b2463f548c#.mm1u8kfnu)
