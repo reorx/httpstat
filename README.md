@@ -20,27 +20,50 @@ There are three ways to get `httpstat`:
 
 ## Usage
 
-Just pass a url with it:
+Simply:
 
 ```bash
 python httpstat.py httpbin.org/get
 ```
 
-> If installed through pip or brew, you can use `httpstat` as a command instead of `python httpstat.py`.
-
-By default it will write response body in a tempfile, but you can let it print out by setting `HTTPSTAT_SHOW_BODY=true`:
+If installed through pip or brew, you can use `httpstat` as a command:
 
 ```bash
-HTTPSTAT_SHOW_BODY=true python httpstat.py httpbin.org/get
+httpstat httpbin.org/get
 ```
 
-You can pass any curl supported arguments after the url (except for `-w`, `-D`, `-o`, `-s`, `-S` which are already used by httpstat):
+### cURL Options
+
+Because `httpstat` is a wrapper of cURL, you can pass any cURL supported option after the url (except for `-w`, `-D`, `-o`, `-s`, `-S` which are already used by `httpstat`):
 
 ```bash
-HTTPSTAT_SHOW_BODY=true python httpstat.py httpbin.org/post -X POST --data-urlencode "a=中文" -v
+httpstat httpbin.org/post -X POST --data-urlencode "a=b" -v
 ```
+
+### Environment Variables
+
+`httpstat` has a bunch of env vars to control its behavior. Here are some usage demos, you can also run `httpstat --help` to see full explanation.
+
+By default `httpstat` stores response body in a temp file rather than shows it, by setting `HTTPSTAT_SHOW_BODY=true` you can make `httpstat` print the body out:
+
+```bash
+HTTPSTAT_SHOW_BODY=true httpstat httpbin.org/get
+```
+
+If you don't want response body being stored automatically, you can set `HTTPSTAT_SAVE_BODY=false` to prevent it:
+
+```bash
+HTTPSTAT_SAVE_BODY=false httpstat httpbin.org/get
+```
+
+Set `HTTPSTAT_SHOW_SPEED=true` to display download & upload speed.
+
+Set `HTTPSTAT_DEBUD=true` to display debug logs for troubleshooting.
+
 
 ## Related Projects
+
+Here are some implementations in various languages:
 
 - Bash: [b4b4r07/httpstat](https://github.com/b4b4r07/httpstat)
 
