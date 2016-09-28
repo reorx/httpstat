@@ -44,28 +44,28 @@ httpstat httpbin.org/post -X POST --data-urlencode "a=b" -v
 
 `httpstat` has a bunch of env vars to control its behavior. Here are some usage demos, you can also run `httpstat --help` to see full explanation.
 
-**HTTPSTAT_SHOW_BODY**
+**`HTTPSTAT_SHOW_BODY`**
 
 Set to `true` to show resposne body in the output, note that body length
 is limited to 1023 bytes, will be truncated if exceeds. Default is `false`.
 
-**HTTPSTAT_SHOW_SPEED**
+**`HTTPSTAT_SHOW_SPEED`**
 
 Set to `true` to show download and upload speed.  Default is `false`.
 
-```
+```bash
 HTTPSTAT_SHOW_SPEED=true httpstat http://cachefly.cachefly.net/10mb.test
 
 ...
 speed_download: 3193.3 KiB/s, speed_upload: 0.0 KiB/s
 ```
 
-**HTTPSTAT_SAVE_BODY**
+**`HTTPSTAT_SAVE_BODY`**
 
 By default httpstat stores body in a tmp file,
 set to `false` to disable this feature. Default is `true`
 
-**HTTPSTAT_CURL_BIN**
+**`HTTPSTAT_CURL_BIN`**
 
 Indicate the cURL bin path to use. Default is `curl` from current shell $PATH.
 
@@ -81,7 +81,7 @@ HTTP/2 200
 > cURL must be compiled with nghttp2 to enable http2 feature
 > ([#12](https://github.com/reorx/httpstat/issues/12)).
 
-**HTTPSTAT_DEBUG**
+**`HTTPSTAT_DEBUG`**
 
 Set to `true` to see debugging logs. Default is `false`
 
