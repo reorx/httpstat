@@ -25,6 +25,7 @@ if PY3:
     xrange = range
 
 
+# Env class is copied from https://github.com/reorx/getenv/blob/master/getenv.py
 class Env(object):
     prefix = 'HTTPSTAT'
 
@@ -34,11 +35,13 @@ class Env(object):
     def get(self, default=None):
         return os.environ.get(self.key, default)
 
+
 ENV_SHOW_BODY = Env('{prefix}_SHOW_BODY')
 ENV_SHOW_SPEED = Env('{prefix}_SHOW_SPEED')
 ENV_SAVE_BODY = Env('{prefix}_SAVE_BODY')
 ENV_CURL_BIN = Env('{prefix}_CURL_BIN')
 ENV_DEBUG = Env('{prefix}_DEBUG')
+
 
 curl_format = """{
 "time_namelookup": %{time_namelookup},
@@ -74,6 +77,7 @@ http_template = """
 """[1:]
 
 
+# Color code is copied from https://github.com/reorx/python-terminal-color/blob/master/color_simple.py
 ISATTY = sys.stdout.isatty()
 
 
