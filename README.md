@@ -44,21 +44,46 @@ httpstat httpbin.org/post -X POST --data-urlencode "a=b" -v
 
 `httpstat` has a bunch of env vars to control its behavior. Here are some usage demos, you can also run `httpstat --help` to see full explanation.
 
-By default `httpstat` stores response body in a temp file rather than shows it, by setting `HTTPSTAT_SHOW_BODY=true` you can make `httpstat` print the body out:
+**HTTPSTAT_SHOW_BODY**
 
-```bash
-HTTPSTAT_SHOW_BODY=true httpstat httpbin.org/get
+Set to `true` to show resposne body in the output, note that body length
+is limited to 1023 bytes, will be truncated if exceeds. Default is `false`.
+
+**HTTPSTAT_SHOW_SPEED**
+
+Set to `true` to show download and upload speed.  Default is `false`.
+
+```
+HTTPSTAT_SHOW_SPEED=true httpstat http://cachefly.cachefly.net/10mb.test
+
+...
+speed_download: 3193.3 KiB/s, speed_upload: 0.0 KiB/s
 ```
 
-If you don't want response body being stored automatically, you can set `HTTPSTAT_SAVE_BODY=false` to prevent it:
+**HTTPSTAT_SAVE_BODY**
+
+By default httpstat stores body in a tmp file,
+set to `false` to disable this feature. Default is `true`
+
+**HTTPSTAT_CURL_BIN**
+
+Indicate the cURL bin path to use. Default is `curl` from current shell $PATH.
+
+This exampe uses brew installed cURL to make HTTP2 request:
 
 ```bash
-HTTPSTAT_SAVE_BODY=false httpstat httpbin.org/get
+HTTPSTAT_CURL_BIN=/usr/local/Cellar/curl/7.50.3/bin/curl httpstat https://http2.akamai.com/ --http2
+
+HTTP/2 200
+...
 ```
 
-Set `HTTPSTAT_SHOW_SPEED=true` to display download & upload speed.
+> cURL must be compiled with nghttp2 to enable http2 feature
+> ([#12](https://github.com/reorx/httpstat/issues/12)).
 
-Set `HTTPSTAT_DEBUD=true` to display debug logs for troubleshooting.
+**HTTPSTAT_DEBUG**
+
+Set to `true` to see debugging logs. Default is `false`
 
 
 ## Related Projects
