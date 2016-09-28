@@ -105,3 +105,9 @@ Here are some implementations in various languages:
 - Go (library): [tcnksm/go-httpstat](https://github.com/tcnksm/go-httpstat)
 
   Other than being a cli tool, this project is used as library to help debugging latency of HTTP requests in Go code, very thoughtful and useful, see more in this [article](https://medium.com/@deeeet/trancing-http-request-latency-in-golang-65b2463f548c#.mm1u8kfnu)
+
+Some code blocks in `httpstat` are copied from other projects of mine, have a look:
+
+- [reorx/python-terminal-color](https://github.com/reorx/python-terminal-color) Drop-in single file library for printing terminal color.
+
+- [reorx/getenv](https://github.com/reorx/getenv) Environment variable definition with type.
