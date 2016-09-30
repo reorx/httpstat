@@ -52,7 +52,9 @@ curl_format = """{
 "time_starttransfer": %{time_starttransfer},
 "time_total": %{time_total},
 "speed_download": %{speed_download},
-"speed_upload": %{speed_upload}
+"speed_upload": %{speed_upload},
+"http_code": %{http_code},
+"redirect_url": "%{redirect_url}"
 }"""
 
 https_template = """
@@ -177,15 +179,20 @@ def main():
     )
 
     # get url
-    url = args[0]
-    if url in ['-h', '--help']:
+    arg_value, redirect_loop_print_stats = args[0], False
+    if arg_value in ['-h', '--help']:
         print_help()
         quit(None, 0)
-    elif url == '--version':
+    elif arg_value == '--version':
         print('httpstat {}'.format(__version__))
         quit(None, 0)
-
-    curl_args = args[1:]
+    elif arg_value == '-L':
+        url = args[1]
+        redirect_loop_print_stats=True
+        curl_args = args[2:]
+    else:
+        url = args[0]
+        curl_args = args[1:]
 
     # check curl args
     exclude_options = [
@@ -210,120 +217,146 @@ def main():
     cmd_env.update(
         LC_ALL='C',
     )
+
     cmd_core = [curl_bin, '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S']
     cmd = cmd_core + curl_args + [url]
     lg.debug('cmd: %s', cmd)
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=cmd_env)
-    out, err = p.communicate()
-    if PY3:
-        out, err = out.decode(), err.decode()
 
-    # print stderr
-    if p.returncode == 0:
-        print(grayscale[16](err))
-    else:
-        _cmd = list(cmd)
-        _cmd[2] = '<output-format>'
-        _cmd[4] = '<tempfile>'
-        _cmd[6] = '<tempfile>'
-        print('> {}'.format(' '.join(_cmd)))
-        quit(yellow('curl error: {}'.format(err)), p.returncode)
 
-    # parse output
-    try:
-        d = json.loads(out)
-    except ValueError as e:
-        print(yellow('Could not decode json: {}'.format(e)))
-        print('curl result:', p.returncode, grayscale[16](out), grayscale[16](err))
-        quit(None, 1)
-    for k in d:
-        if k.startswith('time_'):
-            d[k] = int(d[k] * 1000)
+    def run_command(cmd):
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=cmd_env)
+        out, err = p.communicate()
+        returncode = p.returncode
 
-    # calculate ranges
-    d.update(
-        range_dns=d['time_namelookup'],
-        range_connection=d['time_connect'] - d['time_namelookup'],
-        range_ssl=d['time_pretransfer'] - d['time_connect'],
-        range_server=d['time_starttransfer'] - d['time_pretransfer'],
-        range_transfer=d['time_total'] - d['time_starttransfer'],
-    )
+        if PY3:
+            out, err = out.decode(), err.decode()
 
-    # print header & body summary
-    with open(headerf.name, 'r') as f:
-        headers = f.read().strip()
-    # remove header file
-    lg.debug('rm header file %s', headerf.name)
-    os.remove(headerf.name)
+        return out, err, returncode
 
-    for loop, line in enumerate(headers.split('\n')):
-        if loop == 0:
-            p1, p2 = tuple(line.split('/'))
-            print(green(p1) + grayscale[14]('/') + cyan(p2))
+    def print_stats(out, err, returncode):
+        # print stderr
+        if returncode == 0:
+            print(grayscale[16](err))
         else:
-            pos = line.find(':')
-            print(grayscale[14](line[:pos + 1]) + cyan(line[pos + 1:]))
+            _cmd = list(cmd)
+            _cmd[2] = '<output-format>'
+            _cmd[4] = '<tempfile>'
+            _cmd[6] = '<tempfile>'
+            print('> {}'.format(' '.join(_cmd)))
+            quit(yellow('curl error: {}'.format(err)), returncode)
 
-    print()
+        # parse output
 
-    # body
-    if show_body:
-        body_limit = 1024
-        with open(bodyf.name, 'r') as f:
-            body = f.read().strip()
-        body_len = len(body)
+        try:
+            d = json.loads(out)
+        except ValueError as e:
+            print(yellow('Could not decode json: {}'.format(e)))
+            print('curl result:', returncode, grayscale[16](out), grayscale[16](err))
+            quit(None, 1)
+            for k in d:
+                if k.startswith('time_'):
+                    d[k] = int(d[k] * 1000)
 
-        if body_len > body_limit:
-            print(body[:body_limit] + cyan('...'))
-            print()
-            s = '{} is truncated ({} out of {})'.format(green('Body'), body_limit, body_len)
+        # calculate ranges
+        d.update(
+            range_dns=d['time_namelookup'],
+            range_connection=d['time_connect'] - d['time_namelookup'],
+            range_ssl=d['time_pretransfer'] - d['time_connect'],
+            range_server=d['time_starttransfer'] - d['time_pretransfer'],
+            range_transfer=d['time_total'] - d['time_starttransfer'],
+        )
+        # print header & body summary
+        with open(headerf.name, 'r') as f:
+            headers = f.read().strip()
+        # remove header file
+        lg.debug('rm header file %s', headerf.name)
+        os.remove(headerf.name)
+
+        for loop, line in enumerate(headers.split('\n')):
+            if loop == 0:
+                p1, p2 = tuple(line.split('/'))
+                print(green(p1) + grayscale[14]('/') + cyan(p2))
+            else:
+                pos = line.find(':')
+                print(grayscale[14](line[:pos + 1]) + cyan(line[pos + 1:]))
+
+        print()
+
+        # body
+        if show_body:
+            body_limit = 1024
+            with open(bodyf.name, 'r') as f:
+                body = f.read().strip()
+            body_len = len(body)
+
+            if body_len > body_limit:
+                print(body[:body_limit] + cyan('...'))
+                print()
+                s = '{} is truncated ({} out of {})'.format(green('Body'), body_limit, body_len)
+                if save_body:
+                    s += ', stored in: {}'.format(bodyf.name)
+                print(s)
+            else:
+                print(body)
+        else:
             if save_body:
-                s += ', stored in: {}'.format(bodyf.name)
-            print(s)
+                print('{} stored in: {}'.format(green('Body'), bodyf.name))
+
+        # remove body file
+        if not save_body:
+            lg.debug('rm body file %s', bodyf.name)
+            os.remove(bodyf.name)
+
+        # print stat
+        if url.startswith('https://'):
+            template = https_template
         else:
-            print(body)
+            template = http_template
+
+        # colorize template first line
+        tpl_parts = template.split('\n')
+        tpl_parts[0] = grayscale[16](tpl_parts[0])
+        template = '\n'.join(tpl_parts)
+
+        def fmta(s):
+            return cyan('{:^7}'.format(str(s) + 'ms'))
+
+        def fmtb(s):
+            return cyan('{:<7}'.format(str(s) + 'ms'))
+
+        stat = template.format(
+            # a
+            a0000=fmta(d['range_dns']),
+            a0001=fmta(d['range_connection']),
+            a0002=fmta(d['range_ssl']),
+            a0003=fmta(d['range_server']),
+            a0004=fmta(d['range_transfer']),
+            # b
+            b0000=fmtb(d['time_namelookup']),
+            b0001=fmtb(d['time_connect']),
+            b0002=fmtb(d['time_pretransfer']),
+            b0003=fmtb(d['time_starttransfer']),
+            b0004=fmtb(d['time_total']),
+        )
+        print()
+        print(stat)
+
+    def run_command_and_print_stats(cmd):
+        out, err, returncode  = run_command(cmd)
+        print_stats(out, err, returncode)
+        return out
+
+    while redirect_loop_print_stats:
+        out = run_command_and_print_stats(cmd)
+        out = json.loads(out)
+        if int(out['http_code']) in range(201,400):
+            url = out['redirect_url']
+            cmd = cmd_core + curl_args + [url]
+            continue
+        else:
+            break
     else:
-        if save_body:
-            print('{} stored in: {}'.format(green('Body'), bodyf.name))
-
-    # remove body file
-    if not save_body:
-        lg.debug('rm body file %s', bodyf.name)
-        os.remove(bodyf.name)
-
-    # print stat
-    if url.startswith('https://'):
-        template = https_template
-    else:
-        template = http_template
-
-    # colorize template first line
-    tpl_parts = template.split('\n')
-    tpl_parts[0] = grayscale[16](tpl_parts[0])
-    template = '\n'.join(tpl_parts)
-
-    def fmta(s):
-        return cyan('{:^7}'.format(str(s) + 'ms'))
-
-    def fmtb(s):
-        return cyan('{:<7}'.format(str(s) + 'ms'))
-
-    stat = template.format(
-        # a
-        a0000=fmta(d['range_dns']),
-        a0001=fmta(d['range_connection']),
-        a0002=fmta(d['range_ssl']),
-        a0003=fmta(d['range_server']),
-        a0004=fmta(d['range_transfer']),
-        # b
-        b0000=fmtb(d['time_namelookup']),
-        b0001=fmtb(d['time_connect']),
-        b0002=fmtb(d['time_pretransfer']),
-        b0003=fmtb(d['time_starttransfer']),
-        b0004=fmtb(d['time_total']),
-    )
-    print()
-    print(stat)
+        run_command_and_print_stats(cmd)
 
     # speed, originally bytes per second
     if show_speed:
@@ -333,3 +366,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
