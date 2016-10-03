@@ -114,6 +114,7 @@ def quit(s, code=0):
 def print_help():
     help = """
 Usage: httpstat URL [CURL_OPTIONS]
+       httpstat -L URL [CURL_OPTIONS]
        httpstat -h | --help
        httpstat --version
 
@@ -124,6 +125,7 @@ Options:
   CURL_OPTIONS  any curl supported options, except for -w -D -o -S -s,
                 which are already used internally.
   -h --help     show this screen.
+  -L            Follow redirects
   --version     show version.
 
 Environments:
