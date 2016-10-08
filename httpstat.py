@@ -36,6 +36,7 @@ class Env(object):
         return os.environ.get(self.key, default)
 
 
+ENV_SHOW_IP = Env('{prefix}_SHOW_IP')
 ENV_SHOW_BODY = Env('{prefix}_SHOW_BODY')
 ENV_SHOW_SPEED = Env('{prefix}_SHOW_SPEED')
 ENV_SAVE_BODY = Env('{prefix}_SAVE_BODY')
@@ -52,7 +53,11 @@ curl_format = """{
 "time_starttransfer": %{time_starttransfer},
 "time_total": %{time_total},
 "speed_download": %{speed_download},
-"speed_upload": %{speed_upload}
+"speed_upload": %{speed_upload},
+"remote_ip": "%{remote_ip}",
+"remote_port": "%{remote_port}",
+"local_ip": "%{local_ip}",
+"local_port": "%{local_port}"
 }"""
 
 https_template = """
@@ -146,6 +151,7 @@ def main():
         quit(None, 0)
 
     # get envs
+    show_ip = 'true' in ENV_SHOW_IP.get('true').lower()
     show_body = 'true' in ENV_SHOW_BODY.get('false').lower()
     show_speed = 'true'in ENV_SHOW_SPEED.get('false').lower()
     save_body = 'true' in ENV_SAVE_BODY.get('true').lower()
@@ -163,11 +169,13 @@ def main():
     # log envs
     lg.debug(
         'ENVs:\n'
+        '  {show_ip_key}: {show_ip}\n'
         '  {show_body_key}: {show_body}\n'
         '  {show_speed_key}: {show_speed}\n'
         '  {save_body_key}: {save_body}\n'
         '  {curl_bin_key}: {curl_bin}\n'
         '  {is_debug_key}: {is_debug}\n'.format(
+            show_ip_key=ENV_SHOW_IP.key, show_ip=show_ip,
             show_body_key=ENV_SHOW_BODY.key, show_body=show_body,
             show_speed_key=ENV_SHOW_SPEED.key, show_speed=show_speed,
             save_body_key=ENV_SAVE_BODY.key, save_body=save_body,
@@ -217,10 +225,12 @@ def main():
     out, err = p.communicate()
     if PY3:
         out, err = out.decode(), err.decode()
+    lg.debug('out: %s', out)
 
     # print stderr
     if p.returncode == 0:
-        print(grayscale[16](err))
+        if err:
+            print(grayscale[16](err))
     else:
         _cmd = list(cmd)
         _cmd[2] = '<output-format>'
@@ -248,6 +258,14 @@ def main():
         range_server=d['time_starttransfer'] - d['time_pretransfer'],
         range_transfer=d['time_total'] - d['time_starttransfer'],
     )
+
+    # ip
+    if show_ip:
+        s = 'Connected to {}:{} from {}:{}'.format(
+            underline(cyan(d['remote_ip'])), underline(cyan(d['remote_port'])),
+            underline(d['local_ip']), underline(d['local_port']))
+        print(s)
+        print()
 
     # print header & body summary
     with open(headerf.name, 'r') as f:
