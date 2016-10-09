@@ -257,8 +257,9 @@ def main():
     # ip
     if show_ip:
         s = 'Connected to {}:{} from {}:{}'.format(
-            underline(cyan(d['remote_ip'])), underline(cyan(d['remote_port'])),
-            underline(d['local_ip']), underline(d['local_port']))
+            cyan(d['remote_ip']), cyan(d['remote_port']),
+            d['local_ip'], d['local_port'],
+        )
         print(s)
         print()
 
