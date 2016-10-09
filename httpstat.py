@@ -38,8 +38,8 @@ class Env(object):
         return os.environ.get(self.key, default)
 
 
-ENV_SHOW_IP = Env('{prefix}_SHOW_IP')
 ENV_SHOW_BODY = Env('{prefix}_SHOW_BODY')
+ENV_SHOW_IP = Env('{prefix}_SHOW_IP')
 ENV_SHOW_SPEED = Env('{prefix}_SHOW_SPEED')
 ENV_SAVE_BODY = Env('{prefix}_SAVE_BODY')
 ENV_CURL_BIN = Env('{prefix}_CURL_BIN')
@@ -132,11 +132,11 @@ Options:
   --version     show version.
 
 Environments:
-  HTTPSTAT_SHOW_IP      By default httpstat shows remote and local IP/port address.
-                        Set to `false` to disable this feature. Default is `true`.
   HTTPSTAT_SHOW_BODY    Set to `true` to show resposne body in the output,
                         note that body length is limited to 1023 bytes, will be
                         truncated if exceeds. Default is `false`.
+  HTTPSTAT_SHOW_IP      By default httpstat shows remote and local IP/port address.
+                        Set to `false` to disable this feature. Default is `true`.
   HTTPSTAT_SHOW_SPEED   Set to `true` to show download and upload speed.
                         Default is `false`.
   HTTPSTAT_SAVE_BODY    By default httpstat stores body in a tmp file,
@@ -155,8 +155,8 @@ def main():
         quit(None, 0)
 
     # get envs
-    show_ip = 'true' in ENV_SHOW_IP.get('true').lower()
     show_body = 'true' in ENV_SHOW_BODY.get('false').lower()
+    show_ip = 'true' in ENV_SHOW_IP.get('true').lower()
     show_speed = 'true'in ENV_SHOW_SPEED.get('false').lower()
     save_body = 'true' in ENV_SAVE_BODY.get('true').lower()
     curl_bin = ENV_CURL_BIN.get('curl')
@@ -173,8 +173,8 @@ def main():
     # log envs
     lg.debug('Envs:\n%s', '\n'.join('  {}={}'.format(i.key, i.get('')) for i in Env._instances))
     lg.debug('Flags: %s', dict(
-        show_ip=show_ip,
         show_body=show_body,
+        show_ip=show_ip,
         show_speed=show_speed,
         save_body=save_body,
         curl_bin=curl_bin,
