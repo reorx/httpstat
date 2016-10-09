@@ -28,9 +28,11 @@ if PY3:
 # Env class is copied from https://github.com/reorx/getenv/blob/master/getenv.py
 class Env(object):
     prefix = 'HTTPSTAT'
+    _instances = []
 
     def __init__(self, key):
         self.key = key.format(prefix=self.prefix)
+        Env._instances.append(self)
 
     def get(self, default=None):
         return os.environ.get(self.key, default)
@@ -167,22 +169,15 @@ def main():
     lg = logging.getLogger('httpstat')
 
     # log envs
-    lg.debug(
-        'ENVs:\n'
-        '  {show_ip_key}: {show_ip}\n'
-        '  {show_body_key}: {show_body}\n'
-        '  {show_speed_key}: {show_speed}\n'
-        '  {save_body_key}: {save_body}\n'
-        '  {curl_bin_key}: {curl_bin}\n'
-        '  {is_debug_key}: {is_debug}\n'.format(
-            show_ip_key=ENV_SHOW_IP.key, show_ip=show_ip,
-            show_body_key=ENV_SHOW_BODY.key, show_body=show_body,
-            show_speed_key=ENV_SHOW_SPEED.key, show_speed=show_speed,
-            save_body_key=ENV_SAVE_BODY.key, save_body=save_body,
-            curl_bin_key=ENV_CURL_BIN.key, curl_bin=curl_bin,
-            is_debug_key=ENV_DEBUG.key, is_debug=is_debug,
-        )
-    )
+    lg.debug('Envs:\n%s', '\n'.join('  {}={}'.format(i.key, i.get('')) for i in Env._instances))
+    lg.debug('Flags: %s', dict(
+        show_ip=show_ip,
+        show_body=show_body,
+        show_speed=show_speed,
+        save_body=save_body,
+        curl_bin=curl_bin,
+        is_debug=is_debug,
+    ))
 
     # get url
     url = args[0]
