@@ -42,7 +42,8 @@ httpstat httpbin.org/post -X POST --data-urlencode "a=b" -v
 
 ### Environment Variables
 
-`httpstat` has a bunch of env vars to control its behavior. Here are some usage demos, you can also run `httpstat --help` to see full explanation.
+`httpstat` has a bunch of environment variables to control its behavior.
+Here are some usage demos, you can also run `httpstat --help` to see full explanation.
 
 <details>
 <summary><strong><code>HTTPSTAT_SHOW_BODY</code></strong></summary>
@@ -107,6 +108,15 @@ HTTP/2 200
 Set to `true` to see debugging logs. Default is `false`
 </details>
 
+
+For convenience, you can export these environments in your `.zshrc` or `.bashrc`,
+example:
+
+```bash
+export HTTPSTAT_SHOW_IP=false
+export HTTPSTAT_SHOW_SPEED=true
+export HTTPSTAT_SAVE_BODY=false
+```
 
 ## Related Projects
 
