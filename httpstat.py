@@ -132,6 +132,8 @@ Options:
   --version     show version.
 
 Environments:
+  HTTPSTAT_SHOW_IP      By default httpstat shows remote and local IP/port address.
+                        Set to `false` to disable this feature. Default is `true`.
   HTTPSTAT_SHOW_BODY    Set to `true` to show resposne body in the output,
                         note that body length is limited to 1023 bytes, will be
                         truncated if exceeds. Default is `false`.
