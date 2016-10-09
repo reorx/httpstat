@@ -28,15 +28,18 @@ if PY3:
 # Env class is copied from https://github.com/reorx/getenv/blob/master/getenv.py
 class Env(object):
     prefix = 'HTTPSTAT'
+    _instances = []
 
     def __init__(self, key):
         self.key = key.format(prefix=self.prefix)
+        Env._instances.append(self)
 
     def get(self, default=None):
         return os.environ.get(self.key, default)
 
 
 ENV_SHOW_BODY = Env('{prefix}_SHOW_BODY')
+ENV_SHOW_IP = Env('{prefix}_SHOW_IP')
 ENV_SHOW_SPEED = Env('{prefix}_SHOW_SPEED')
 ENV_SAVE_BODY = Env('{prefix}_SAVE_BODY')
 ENV_CURL_BIN = Env('{prefix}_CURL_BIN')
@@ -52,7 +55,11 @@ curl_format = """{
 "time_starttransfer": %{time_starttransfer},
 "time_total": %{time_total},
 "speed_download": %{speed_download},
-"speed_upload": %{speed_upload}
+"speed_upload": %{speed_upload},
+"remote_ip": "%{remote_ip}",
+"remote_port": "%{remote_port}",
+"local_ip": "%{local_ip}",
+"local_port": "%{local_port}"
 }"""
 
 https_template = """
@@ -128,6 +135,8 @@ Environments:
   HTTPSTAT_SHOW_BODY    Set to `true` to show resposne body in the output,
                         note that body length is limited to 1023 bytes, will be
                         truncated if exceeds. Default is `false`.
+  HTTPSTAT_SHOW_IP      By default httpstat shows remote and local IP/port address.
+                        Set to `false` to disable this feature. Default is `true`.
   HTTPSTAT_SHOW_SPEED   Set to `true` to show download and upload speed.
                         Default is `false`.
   HTTPSTAT_SAVE_BODY    By default httpstat stores body in a tmp file,
@@ -147,6 +156,7 @@ def main():
 
     # get envs
     show_body = 'true' in ENV_SHOW_BODY.get('false').lower()
+    show_ip = 'true' in ENV_SHOW_IP.get('true').lower()
     show_speed = 'true'in ENV_SHOW_SPEED.get('false').lower()
     save_body = 'true' in ENV_SAVE_BODY.get('true').lower()
     curl_bin = ENV_CURL_BIN.get('curl')
@@ -161,20 +171,15 @@ def main():
     lg = logging.getLogger('httpstat')
 
     # log envs
-    lg.debug(
-        'ENVs:\n'
-        '  {show_body_key}: {show_body}\n'
-        '  {show_speed_key}: {show_speed}\n'
-        '  {save_body_key}: {save_body}\n'
-        '  {curl_bin_key}: {curl_bin}\n'
-        '  {is_debug_key}: {is_debug}\n'.format(
-            show_body_key=ENV_SHOW_BODY.key, show_body=show_body,
-            show_speed_key=ENV_SHOW_SPEED.key, show_speed=show_speed,
-            save_body_key=ENV_SAVE_BODY.key, save_body=save_body,
-            curl_bin_key=ENV_CURL_BIN.key, curl_bin=curl_bin,
-            is_debug_key=ENV_DEBUG.key, is_debug=is_debug,
-        )
-    )
+    lg.debug('Envs:\n%s', '\n'.join('  {}={}'.format(i.key, i.get('')) for i in Env._instances))
+    lg.debug('Flags: %s', dict(
+        show_body=show_body,
+        show_ip=show_ip,
+        show_speed=show_speed,
+        save_body=save_body,
+        curl_bin=curl_bin,
+        is_debug=is_debug,
+    ))
 
     # get url
     url = args[0]
@@ -217,10 +222,12 @@ def main():
     out, err = p.communicate()
     if PY3:
         out, err = out.decode(), err.decode()
+    lg.debug('out: %s', out)
 
     # print stderr
     if p.returncode == 0:
-        print(grayscale[16](err))
+        if err:
+            print(grayscale[16](err))
     else:
         _cmd = list(cmd)
         _cmd[2] = '<output-format>'
@@ -248,6 +255,15 @@ def main():
         range_server=d['time_starttransfer'] - d['time_pretransfer'],
         range_transfer=d['time_total'] - d['time_starttransfer'],
     )
+
+    # ip
+    if show_ip:
+        s = 'Connected to {}:{} from {}:{}'.format(
+            cyan(d['remote_ip']), cyan(d['remote_port']),
+            d['local_ip'], d['local_port'],
+        )
+        print(s)
+        print()
 
     # print header & body summary
     with open(headerf.name, 'r') as f:

@@ -53,6 +53,14 @@ is limited to 1023 bytes, will be truncated if exceeds. Default is `false`.
 
 
 <details>
+<summary><strong><code>HTTPSTAT_SHOW_IP</code></strong></summary>
+
+By default httpstat shows remote and local IP/port address.
+Set to `false` to disable this feature. Default is `true`.
+</details>
+
+
+<details>
 <summary><strong><code>HTTPSTAT_SHOW_SPEED</code></strong></summary>
 
 Set to `true` to show download and upload speed.  Default is `false`.

@@ -45,7 +45,7 @@ for pybin in python python3; do
     assert_exit 0
 
     title "HTTPSTAT_DEBUG"
-    HTTPSTAT_DEBUG=true main $http_url | grep -q 'HTTPSTAT_DEBUG: True'
+    HTTPSTAT_DEBUG=true main $http_url | grep -q 'HTTPSTAT_DEBUG=true'
     assert_exit 0
 
     title "HTTPSTAT_SHOW_SPEED"
@@ -54,6 +54,10 @@ for pybin in python python3; do
 
     title "HTTPSTAT_CURL_BIN"
     HTTPSTAT_CURL_BIN=/usr/bin/curl HTTPSTAT_DEBUG=true main $http_url | grep -q '/usr/bin/curl'
+    assert_exit 0
+
+    title "HTTPSTAT_SHOW_IP"
+    HTTPSTAT_SHOW_IP="true" main $http_url | grep -q 'Connected'
     assert_exit 0
 
     title "HTTPSTAT_SHOW_BODY=true, -G --data-urlencode \"a=中文\""
