@@ -48,7 +48,7 @@ Here are some usage demos, you can also run `httpstat --help` to see full explan
 <details>
 <summary><strong><code>HTTPSTAT_SHOW_BODY</code></strong></summary>
 
-Set to `true` to show resposne body in the output, note that body length
+Set to `true` to show response body in the output, note that body length
 is limited to 1023 bytes, will be truncated if exceeds. Default is `false`.
 </details>
 
