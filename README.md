@@ -17,6 +17,7 @@ There are three ways to get `httpstat`:
 
 - Through homebrew (macOS only): `brew install httpstat`
 
+> For Windows users, @davecheney's [Go version](https://github.com/davecheney/httpstat) is suggested. → [download link](https://github.com/davecheney/httpstat/releases)
 
 ## Usage
 
@@ -122,6 +123,15 @@ export HTTPSTAT_SAVE_BODY=false
 
 Here are some implementations in various languages:
 
+
+- Go: [davecheney/httpstat](https://github.com/davecheney/httpstat)
+
+  This is the Go alternative of httpstat, it's written in pure Go and relies no external programs. Choose it if you like solid binary executions (actually I do).
+
+- Go (library): [tcnksm/go-httpstat](https://github.com/tcnksm/go-httpstat)
+
+  Other than being a cli tool, this project is used as library to help debugging latency of HTTP requests in Go code, very thoughtful and useful, see more in this [article](https://medium.com/@deeeet/trancing-http-request-latency-in-golang-65b2463f548c#.mm1u8kfnu)
+
 - Bash: [b4b4r07/httpstat](https://github.com/b4b4r07/httpstat)
 
   This is what exactly I want to do at the very beginning, but gave up due to not confident in my bash skill, good job!
@@ -129,14 +139,6 @@ Here are some implementations in various languages:
 - Node: [yosuke-furukawa/httpstat](https://github.com/yosuke-furukawa/httpstat)
 
   [b4b4r07](https://twitter.com/b4b4r07) mentioned this in his [article](http://www.tellme.tokyo/entry/2016/09/25/213810), could be used as a HTTP client also.
-
-- Go: [davecheney/httpstat](https://github.com/davecheney/httpstat)
-
-  I'm practicing Go recently, it's happy to read and learn from this one.
-
-- Go (library): [tcnksm/go-httpstat](https://github.com/tcnksm/go-httpstat)
-
-  Other than being a cli tool, this project is used as library to help debugging latency of HTTP requests in Go code, very thoughtful and useful, see more in this [article](https://medium.com/@deeeet/trancing-http-request-latency-in-golang-65b2463f548c#.mm1u8kfnu)
 
 - PHP: [talhasch/php-httpstat](https://github.com/talhasch/php-httpstat)
 
