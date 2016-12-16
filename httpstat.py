@@ -15,9 +15,6 @@ import logging
 import tempfile
 import subprocess
 
-if os.name == 'nt':
-    from colorama import init
-    init()
 
 __version__ = '1.2.1'
 
