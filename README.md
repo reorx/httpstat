@@ -24,7 +24,7 @@ There are three ways to get `httpstat`:
 Simply:
 
 ```bash
-python httpstat.py httpbin.org/get
+python -m httpstat httpbin.org/get
 ```
 
 If installed through pip or brew, you can use `httpstat` as a command:
