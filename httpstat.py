@@ -97,8 +97,8 @@ def make_color(code):
     return color_func
 
 
-red = make_color(31)
-green = make_color(32)
+red = make_color(30)
+green = make_color(31)
 yellow = make_color(33)
 blue = make_color(34)
 magenta = make_color(35)
