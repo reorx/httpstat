@@ -88,7 +88,7 @@ http_template = """
 ISATTY = sys.stdout.isatty()
 
 
-def make_color(code):
+def make_color(code):  #change the color
     def color_func(s):
         if not ISATTY:
             return s
