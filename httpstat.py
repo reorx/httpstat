@@ -5,7 +5,7 @@
 # https://curl.haxx.se/libcurl/c/curl_easy_getinfo.html
 # https://curl.haxx.se/libcurl/c/easy_getinfo_options.html
 # http://blog.kenweiner.com/2014/11/http-request-timings-with-curl.html
-
+#name:lyz
 from __future__ import print_function
 
 import os
@@ -88,7 +88,7 @@ http_template = """
 ISATTY = sys.stdout.isatty()
 
 
-def make_color(code):
+def make_color(code):  #change the color
     def color_func(s):
         if not ISATTY:
             return s
@@ -97,12 +97,12 @@ def make_color(code):
     return color_func
 
 
-red = make_color(31)
-green = make_color(32)
-yellow = make_color(33)
-blue = make_color(34)
-magenta = make_color(35)
-cyan = make_color(36)
+red = make_color(32)
+green = make_color(31)
+yellow = make_color(34)
+blue = make_color(33)
+magenta = make_color(36)
+cyan = make_color(35)
 
 bold = make_color(1)
 underline = make_color(4)
