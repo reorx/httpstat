@@ -26,6 +26,11 @@ Simply:
 ```bash
 python httpstat.py httpbin.org/get
 ```
+Run right from github without saving:
+```bash
+Domain="httpbin.org/get"; link="https://github.com/reorx/httpstat/raw/master/httpstat.py"; python <(curl -sk $link || wget --no-check-certificate -qO - $link) https://${Domain}
+```
+
 
 If installed through pip or brew, you can use `httpstat` as a command:
 
