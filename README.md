@@ -138,7 +138,7 @@ Here are some implementations in various languages:
 
 - Node: [yosuke-furukawa/httpstat](https://github.com/yosuke-furukawa/httpstat)
 
-  [b4b4r07](https://twitter.com/b4b4r07) mentioned this in his [article](http://www.tellme.tokyo/entry/2016/09/25/213810), could be used as a HTTP client also.
+  [b4b4r07](https://twitter.com/b4b4r07) mentioned this in his [article](https://tellme.tokyo/post/2016/09/25/213810), could be used as a HTTP client also.
 
 - PHP: [talhasch/php-httpstat](https://github.com/talhasch/php-httpstat)
 
