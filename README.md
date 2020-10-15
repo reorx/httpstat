@@ -46,62 +46,56 @@ httpstat httpbin.org/post -X POST --data-urlencode "a=b" -v
 `httpstat` has a bunch of environment variables to control its behavior.
 Here are some usage demos, you can also run `httpstat --help` to see full explanation.
 
-<summary><strong><code>HTTPSTAT_SHOW_BODY</code></strong></summary>
+- <strong><code>HTTPSTAT_SHOW_BODY</code></strong>
 
-Set to `true` to show response body in the output, note that body length
-is limited to 1023 bytes, will be truncated if exceeds. Default is `false`.
+  Set to `true` to show response body in the output, note that body length
+  is limited to 1023 bytes, will be truncated if exceeds. Default is `false`.
 
+- <strong><code>HTTPSTAT_SHOW_IP</code></strong>
 
-<summary><strong><code>HTTPSTAT_SHOW_IP</code></strong></summary>
+  By default httpstat shows remote and local IP/port address.
+  Set to `false` to disable this feature. Default is `true`.
 
-By default httpstat shows remote and local IP/port address.
-Set to `false` to disable this feature. Default is `true`.
+- <strong><code>HTTPSTAT_SHOW_SPEED</code></strong>
 
+  Set to `true` to show download and upload speed.  Default is `false`.
 
-<summary><strong><code>HTTPSTAT_SHOW_SPEED</code></strong></summary>
+  ```bash
+  HTTPSTAT_SHOW_SPEED=true httpstat http://cachefly.cachefly.net/10mb.test
+  
+  ...
+  speed_download: 3193.3 KiB/s, speed_upload: 0.0 KiB/s
+  ```
 
-Set to `true` to show download and upload speed.  Default is `false`.
+- <strong><code>HTTPSTAT_SAVE_BODY</code></strong>
 
-```bash
-HTTPSTAT_SHOW_SPEED=true httpstat http://cachefly.cachefly.net/10mb.test
+  By default httpstat stores body in a tmp file,
+  set to `false` to disable this feature. Default is `true`
 
-...
-speed_download: 3193.3 KiB/s, speed_upload: 0.0 KiB/s
-```
+- <strong><code>HTTPSTAT_CURL_BIN</code></strong>
 
+  Indicate the cURL bin path to use. Default is `curl` from current shell $PATH.
 
-<summary><strong><code>HTTPSTAT_SAVE_BODY</code></strong></summary>
+  This exampe uses brew installed cURL to make HTTP2 request:
 
-By default httpstat stores body in a tmp file,
-set to `false` to disable this feature. Default is `true`
+  ```bash
+  HTTPSTAT_CURL_BIN=/usr/local/Cellar/curl/7.50.3/bin/curl httpstat https://http2.akamai.com/ --http2
+  
+  HTTP/2 200
+  ...
+  ```
 
+  > cURL must be compiled with nghttp2 to enable http2 feature
+  > ([#12](https://github.com/reorx/httpstat/issues/12)).
 
-<summary><strong><code>HTTPSTAT_CURL_BIN</code></strong></summary>
+- <strong><code>HTTPSTAT_METRICS_ONLY</code></strong>
 
-Indicate the cURL bin path to use. Default is `curl` from current shell $PATH.
+  If set to `true`, httpstat will only output metrics in json format,
+  this is useful if you want to parse the data instead of reading it.
 
-This exampe uses brew installed cURL to make HTTP2 request:
+- <strong><code>HTTPSTAT_DEBUG</code></strong>
 
-```bash
-HTTPSTAT_CURL_BIN=/usr/local/Cellar/curl/7.50.3/bin/curl httpstat https://http2.akamai.com/ --http2
-
-HTTP/2 200
-...
-```
-
-> cURL must be compiled with nghttp2 to enable http2 feature
-> ([#12](https://github.com/reorx/httpstat/issues/12)).
-
-
-<summary><strong><code>HTTPSTAT_METRICS_ONLY</code></strong></summary>
-
-If set to `true`, httpstat will only output metrics in json format,
-this is useful if you want to parse the data instead of reading it.
-
-
-<summary><strong><code>HTTPSTAT_DEBUG</code></strong></summary>
-
-Set to `true` to see debugging logs. Default is `false`
+  Set to `true` to see debugging logs. Default is `false`
 
 
 For convenience, you can export these environments in your `.zshrc` or `.bashrc`,
