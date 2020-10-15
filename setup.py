@@ -33,6 +33,7 @@ setup(
     description='curl statistics made simple',
     url='https://github.com/reorx/httpstat',
     long_description=get_long_description(),
+    long_description_content_type='text/markdown',
     py_modules=[package_name],
     entry_points={
         'console_scripts': [
