@@ -44,6 +44,7 @@ ENV_SHOW_SPEED = Env('{prefix}_SHOW_SPEED')
 ENV_SAVE_BODY = Env('{prefix}_SAVE_BODY')
 ENV_CURL_BIN = Env('{prefix}_CURL_BIN')
 ENV_DEBUG = Env('{prefix}_DEBUG')
+ENV_METRICS_ONLY = Env('{prefix}_METRICS_ONLY')
 
 
 curl_format = """{
@@ -161,6 +162,7 @@ def main():
     save_body = 'true' in ENV_SAVE_BODY.get('true').lower()
     curl_bin = ENV_CURL_BIN.get('curl')
     is_debug = 'true' in ENV_DEBUG.get('false').lower()
+    metrics_only = 'true' in ENV_METRICS_ONLY.get('false').lower()
 
     # configure logging
     if is_debug:
@@ -243,6 +245,12 @@ def main():
         print(yellow('Could not decode json: {}'.format(e)))
         print('curl result:', p.returncode, grayscale[16](out), grayscale[16](err))
         quit(None, 1)
+
+    # print json if metrics_only is enabled
+    if metrics_only:
+        print(json.dumps(d, indent=2))
+        quit(None, 0)
+
     for k in d:
         if k.startswith('time_'):
             d[k] = int(d[k] * 1000)
