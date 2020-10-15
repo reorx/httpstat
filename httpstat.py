@@ -16,7 +16,7 @@ import tempfile
 import subprocess
 
 
-__version__ = '1.2.1'
+__version__ = '1.3.0'
 
 
 PY3 = sys.version_info >= (3,)
@@ -43,8 +43,8 @@ ENV_SHOW_IP = Env('{prefix}_SHOW_IP')
 ENV_SHOW_SPEED = Env('{prefix}_SHOW_SPEED')
 ENV_SAVE_BODY = Env('{prefix}_SAVE_BODY')
 ENV_CURL_BIN = Env('{prefix}_CURL_BIN')
-ENV_DEBUG = Env('{prefix}_DEBUG')
 ENV_METRICS_ONLY = Env('{prefix}_METRICS_ONLY')
+ENV_DEBUG = Env('{prefix}_DEBUG')
 
 
 curl_format = """{
@@ -161,8 +161,8 @@ def main():
     show_speed = 'true'in ENV_SHOW_SPEED.get('false').lower()
     save_body = 'true' in ENV_SAVE_BODY.get('true').lower()
     curl_bin = ENV_CURL_BIN.get('curl')
-    is_debug = 'true' in ENV_DEBUG.get('false').lower()
     metrics_only = 'true' in ENV_METRICS_ONLY.get('false').lower()
+    is_debug = 'true' in ENV_DEBUG.get('false').lower()
 
     # configure logging
     if is_debug:
@@ -246,11 +246,7 @@ def main():
         print('curl result:', p.returncode, grayscale[16](out), grayscale[16](err))
         quit(None, 1)
 
-    # print json if metrics_only is enabled
-    if metrics_only:
-        print(json.dumps(d, indent=2))
-        quit(None, 0)
-
+    # convert time_ metrics from seconds to milliseconds
     for k in d:
         if k.startswith('time_'):
             d[k] = int(d[k] * 1000)
@@ -263,6 +259,11 @@ def main():
         range_server=d['time_starttransfer'] - d['time_pretransfer'],
         range_transfer=d['time_total'] - d['time_starttransfer'],
     )
+
+    # print json if metrics_only is enabled
+    if metrics_only:
+        print(json.dumps(d, indent=2))
+        quit(None, 0)
 
     # ip
     if show_ip:
