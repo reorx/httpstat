@@ -249,7 +249,10 @@ def main():
     # convert time_ metrics from seconds to milliseconds
     for k in d:
         if k.startswith('time_'):
-            d[k] = int(d[k] * 1000)
+            if type(d[k]) == int:
+                d[k] = int(d[k] / 1000)
+            else:
+                d[k] = int(d[k] * 1000)
 
     # calculate ranges
     d.update(
