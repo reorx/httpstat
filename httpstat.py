@@ -249,10 +249,19 @@ def main():
     # convert time_ metrics from seconds to milliseconds
     for k in d:
         if k.startswith('time_'):
-            if type(d[k]) == int:
-                d[k] = int(d[k] / 1000)
+            v = d[k]
+            # Convert time_ values to milliseconds in int
+            if isinstance(v, float):
+                # Before 7.61.0, time values are represented as seconds in float
+                d[k] = int(v * 1000)
+            elif isinstance(v, int):
+                # Starting from 7.61.0, libcurl uses microsecond in int
+                # to return time values, references:
+                # https://daniel.haxx.se/blog/2018/07/11/curl-7-61-0/
+                # https://curl.se/bug/?i=2495
+                d[k] = int(v / 1000)
             else:
-                d[k] = int(d[k] * 1000)
+                raise TypeError('{} value type is invalid: {}'.format(k, type(v)))
 
     # calculate ranges
     d.update(
