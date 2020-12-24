@@ -24,6 +24,16 @@ PY3 = sys.version_info >= (3,)
 if PY3:
     xrange = range
 
+WIN = os.name == 'nt'
+
+if WIN:
+    try:
+        import colorama
+    except ImportError:
+        print('Please install colorama for better color support in Windows')
+    else:
+        colorama.init()
+
 
 # Env class is copied from https://github.com/reorx/getenv/blob/master/getenv.py
 class Env(object):

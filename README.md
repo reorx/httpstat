@@ -18,6 +18,8 @@ There are three ways to get `httpstat`:
 - Through homebrew (macOS only): `brew install httpstat`
 
 > For Windows users, @davecheney's [Go version](https://github.com/davecheney/httpstat) is suggested. → [download link](https://github.com/davecheney/httpstat/releases)
+>
+> Or install through `pip install httpstat[windows]` to have better support.
 
 ## Usage
 

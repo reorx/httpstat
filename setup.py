@@ -40,5 +40,8 @@ setup(
             'httpstat = httpstat:main'
         ]
     },
+    extras_require={
+        'windows': ['colorama'],
+    },
     license='License :: OSI Approved :: MIT License',
 )
