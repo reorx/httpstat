@@ -16,7 +16,7 @@ function title() {
     echo "Test $1 ..."
 }
 
-http_url="google.com"
+http_url="www.gstatic.com/generate_204"
 https_url="https://http2.akamai.com"
 
 for pybin in python python3; do
