@@ -16,9 +16,23 @@ function title() {
     echo "Test $1 ..."
 }
 
+function check_url() {
+    url=$1
+    echo "Checking $url ..."
+    if curl -s --head "$url" >/dev/null; then
+        echo "URL $url is accessible"
+    else
+        echo "URL $url is not accessible"
+        exit 1
+    fi
+}
+
 http_url="www.gstatic.com/generate_204"
 https_url="https://http2.akamai.com"
 
+check_url "$http_url"
+check_url "$https_url"
+    
 for pybin in python python3; do
 #for pybin in python; do
     echo
