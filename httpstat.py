@@ -6,7 +6,6 @@
 # https://curl.haxx.se/libcurl/c/easy_getinfo_options.html
 # http://blog.kenweiner.com/2014/11/http-request-timings-with-curl.html
 
-from __future__ import print_function
 
 import os
 import json
@@ -16,13 +15,7 @@ import tempfile
 import subprocess
 
 
-__version__ = '1.3.2'
-
-
-PY3 = sys.version_info >= (3,)
-
-if PY3:
-    xrange = range
+__version__ = '1.4.0'
 
 
 # Env class is copied from https://github.com/reorx/getenv/blob/master/getenv.py
@@ -85,16 +78,19 @@ http_template = """
 """[1:]
 
 
-# Color code is copied from https://github.com/reorx/python-terminal-color/blob/master/color_simple.py
-ISATTY = sys.stdout.isatty()
+# Color code is copied from
+# https://github.com/reorx/python-terminal-color/blob/master/color_simple.py
+
+
+ISATTY = sys.stdout.isatty()    # Terminal connection
 
 
 def make_color(code):
     def color_func(s):
+        # if run from terminal, wrap text in ascii color code
         if not ISATTY:
             return s
-        tpl = '\x1b[{}m{}\x1b[0m'
-        return tpl.format(code, s)
+        return f'\x1b[{code}m{s}\x1b[0m'
     return color_func
 
 
@@ -108,7 +104,7 @@ cyan = make_color(36)
 bold = make_color(1)
 underline = make_color(4)
 
-grayscale = {(i - 232): make_color('38;5;' + str(i)) for i in xrange(232, 256)}
+grayscale = {(i - 232): make_color('38;5;' + str(i)) for i in range(232, 256)}
 
 
 def quit(s, code=0):
@@ -173,7 +169,7 @@ def main():
     lg = logging.getLogger('httpstat')
 
     # log envs
-    lg.debug('Envs:\n%s', '\n'.join('  {}={}'.format(i.key, i.get('')) for i in Env._instances))
+    lg.debug('Envs:\n%s', '\n'.join(f'  {i.key}={i.get("")}' for i in Env._instances))
     lg.debug('Flags: %s', dict(
         show_body=show_body,
         show_ip=show_ip,
@@ -189,7 +185,7 @@ def main():
         print_help()
         quit(None, 0)
     elif url == '--version':
-        print('httpstat {}'.format(__version__))
+        print(f'httpstat {__version__}')
         quit(None, 0)
 
     curl_args = args[1:]
@@ -203,7 +199,7 @@ def main():
     ]
     for i in exclude_options:
         if i in curl_args:
-            quit(yellow('Error: {} is not allowed in extra curl args'.format(i)), 1)
+            quit(yellow('Error: {i} is not allowed in extra curl args'), 1)
 
     # tempfile for output
     bodyf = tempfile.NamedTemporaryFile(delete=False)
@@ -215,16 +211,14 @@ def main():
     # run cmd
     cmd_env = os.environ.copy()
     cmd_env.update(
-        LC_ALL='C',
+        LC_ALL='C',     # override environment variable localization on *nix
     )
     cmd_core = [curl_bin, '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S']
     cmd = cmd_core + curl_args + [url]
-    lg.debug('cmd: %s', cmd)
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=cmd_env)
-    out, err = p.communicate()
-    if PY3:
-        out, err = out.decode(), err.decode()
-    lg.debug('out: %s', out)
+    lg.debug(f'cmd: {cmd}')
+    p = subprocess.run(cmd, capture_output=True, text=True, env=cmd_env)
+    out, err = p.stdout, p.stderr
+    lg.debug(f'out: {out}')
 
     # print stderr
     if p.returncode == 0:
@@ -235,14 +229,14 @@ def main():
         _cmd[2] = '<output-format>'
         _cmd[4] = '<tempfile>'
         _cmd[6] = '<tempfile>'
-        print('> {}'.format(' '.join(_cmd)))
-        quit(yellow('curl error: {}'.format(err)), p.returncode)
+        print(f'> {" ".join(_cmd)}')
+        quit(yellow(f'curl error: {err}'), p.returncode)
 
     # parse output
     try:
         d = json.loads(out)
     except ValueError as e:
-        print(yellow('Could not decode json: {}'.format(e)))
+        print(yellow(f'Could not decode json: {e}'))
         print('curl result:', p.returncode, grayscale[16](out), grayscale[16](err))
         quit(None, 1)
 
@@ -261,7 +255,7 @@ def main():
                 # https://curl.se/bug/?i=2495
                 d[k] = int(v / 1000)
             else:
-                raise TypeError('{} value type is invalid: {}'.format(k, type(v)))
+                raise TypeError(f'{k} value type is invalid: {type(v)}')
 
     # calculate ranges
     d.update(
@@ -279,10 +273,9 @@ def main():
 
     # ip
     if show_ip:
-        s = 'Connected to {}:{} from {}:{}'.format(
-            cyan(d['remote_ip']), cyan(d['remote_port']),
-            d['local_ip'], d['local_port'],
-        )
+        s = 'Connected to '
+        s += f'[{cyan(d["remote_ip"])}]:{cyan(d["remote_port"])} '
+        s += f'from [{cyan(d["local_ip"])}]:{cyan(d["local_port"])}'
         print(s)
         print()
 
@@ -290,7 +283,7 @@ def main():
     with open(headerf.name, 'r') as f:
         headers = f.read().strip()
     # remove header file
-    lg.debug('rm header file %s', headerf.name)
+    lg.debug(f'rm header file {headerf.name}')
     os.remove(headerf.name)
 
     for loop, line in enumerate(headers.split('\n')):
@@ -313,19 +306,19 @@ def main():
         if body_len > body_limit:
             print(body[:body_limit] + cyan('...'))
             print()
-            s = '{} is truncated ({} out of {})'.format(green('Body'), body_limit, body_len)
+            s = f'{green("Body")} is truncated ({body_limit} out of {body_len})'
             if save_body:
-                s += ', stored in: {}'.format(bodyf.name)
+                s += f', stored in: {bodyf.name}'
             print(s)
         else:
             print(body)
     else:
         if save_body:
-            print('{} stored in: {}'.format(green('Body'), bodyf.name))
+            print(f'{green("Body")} stored in: {bodyf.name}')
 
     # remove body file
     if not save_body:
-        lg.debug('rm body file %s', bodyf.name)
+        lg.debug(f'rm body file {bodyf.name}')
         os.remove(bodyf.name)
 
     # print stat
@@ -335,17 +328,18 @@ def main():
         template = http_template
 
     # colorize template first line
-    tpl_parts = template.split('\n')
+    tpl_parts = template.splitlines()
     tpl_parts[0] = grayscale[16](tpl_parts[0])
     template = '\n'.join(tpl_parts)
 
     def fmta(s):
-        return cyan('{:^7}'.format(str(s) + 'ms'))
+        return cyan(f'{str(s) + "ms":^7}')
 
     def fmtb(s):
-        return cyan('{:<7}'.format(str(s) + 'ms'))
+        return cyan(f'{str(s) + "ms":<7}')
 
-    stat = template.format(
+    print()
+    print(template.format(
         # a
         a0000=fmta(d['range_dns']),
         a0001=fmta(d['range_connection']),
@@ -358,14 +352,13 @@ def main():
         b0002=fmtb(d['time_pretransfer']),
         b0003=fmtb(d['time_starttransfer']),
         b0004=fmtb(d['time_total']),
-    )
-    print()
-    print(stat)
+    ))
 
     # speed, originally bytes per second
     if show_speed:
-        print('speed_download: {:.1f} KiB/s, speed_upload: {:.1f} KiB/s'.format(
-            d['speed_download'] / 1024, d['speed_upload'] / 1024))
+        s = f'Download speed: {d["speed_download"] / 1024:.1f} KiB/s, '
+        s += f'Upload speed: {d["speed_upload"] / 1024:.1f} KiB/s'
+        print(s)
 
 
 if __name__ == '__main__':
