@@ -41,7 +41,7 @@ class Env(object):
 ENV_SHOW_BODY = Env('{prefix}_SHOW_BODY')
 ENV_SHOW_IP = Env('{prefix}_SHOW_IP')
 ENV_SHOW_SPEED = Env('{prefix}_SHOW_SPEED')
-ENV_SAVE_BODY = Env('{prefix}_SAVE_BODY')
+ENV_SAVE_RESPONSE = Env('{prefix}_SAVE_RESPONSE')
 ENV_CURL_BIN = Env('{prefix}_CURL_BIN')
 ENV_METRICS_ONLY = Env('{prefix}_METRICS_ONLY')
 ENV_DEBUG = Env('{prefix}_DEBUG')
@@ -159,7 +159,7 @@ def main():
     show_body = 'true' in ENV_SHOW_BODY.get('false').lower()
     show_ip = 'true' in ENV_SHOW_IP.get('true').lower()
     show_speed = 'true'in ENV_SHOW_SPEED.get('false').lower()
-    save_body = 'true' in ENV_SAVE_BODY.get('true').lower()
+    save_response = 'true' in ENV_SAVE_RESPONSE.get('true').lower()
     curl_bin = ENV_CURL_BIN.get('curl')
     metrics_only = 'true' in ENV_METRICS_ONLY.get('false').lower()
     is_debug = 'true' in ENV_DEBUG.get('false').lower()
@@ -178,7 +178,7 @@ def main():
         show_body=show_body,
         show_ip=show_ip,
         show_speed=show_speed,
-        save_body=save_body,
+        save_response=save_response,
         curl_bin=curl_bin,
         is_debug=is_debug,
     ))
@@ -275,6 +275,11 @@ def main():
     # print json if metrics_only is enabled
     if metrics_only:
         print(json.dumps(d, indent=2))
+        if not save_response:
+            lg.debug('rm header file %s', headerf.name)
+            os.remove(headerf.name)
+            lg.debug('rm body file %s', bodyf.name)
+            os.remove(bodyf.name)
         quit(None, 0)
 
     # ip
@@ -314,17 +319,17 @@ def main():
             print(body[:body_limit] + cyan('...'))
             print()
             s = '{} is truncated ({} out of {})'.format(green('Body'), body_limit, body_len)
-            if save_body:
+            if save_response:
                 s += ', stored in: {}'.format(bodyf.name)
             print(s)
         else:
             print(body)
     else:
-        if save_body:
+        if save_response:
             print('{} stored in: {}'.format(green('Body'), bodyf.name))
 
     # remove body file
-    if not save_body:
+    if not save_response:
         lg.debug('rm body file %s', bodyf.name)
         os.remove(bodyf.name)
 
