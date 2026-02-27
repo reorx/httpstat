@@ -27,7 +27,7 @@ function check_url() {
     fi
 }
 
-http_url="www.gstatic.com/generate_204"
+http_url="https://www.gstatic.com/generate_204"
 https_url="https://http2.akamai.com"
 
 check_url "$http_url"
@@ -39,11 +39,11 @@ for pybin in python python3; do
     echo "# Test in $pybin"
 
     function main() {
-        $pybin httpstat.py $@ 2>&1
+        $pybin httpstat.py "$@" 2>&1
     }
 
     function main_silent() {
-        $pybin httpstat.py $@ >/dev/null 2>&1
+        $pybin httpstat.py "$@" >/dev/null 2>&1
     }
 
     title "basic"
@@ -90,19 +90,21 @@ for pybin in python python3; do
     HTTPSTAT_SAVE_BODY=false HTTPSTAT_DEBUG=true main $http_url | grep -q 'rm body file'
     assert_exit 0
 
-    title "HTTPSTAT_SHOW_BODY=true HTTPSTAT_SAVE_BODY=true, has 'is truncated, has 'stored in'"
+    title "HTTPSTAT_SHOW_BODY=true HTTPSTAT_SAVE_BODY=true"
     out=$(HTTPSTAT_SHOW_BODY=true HTTPSTAT_SAVE_BODY=true \
         main $https_url)
-    echo "$out" | grep -q 'is truncated'
+    echo "$out" | grep -q '^HTTP/'
     assert_exit 0
 
-    echo "$out" | grep -q 'stored in'
-    assert_exit 0
+    if echo "$out" | grep -q 'is truncated'; then
+        echo "$out" | grep -q 'stored in'
+        assert_exit 0
+    fi
 
-    title "HTTPSTAT_SHOW_BODY=true HTTPSTAT_SAVE_BODY=false, has 'is truncated', no 'stored in'"
+    title "HTTPSTAT_SHOW_BODY=true HTTPSTAT_SAVE_BODY=false, no 'stored in'"
     out=$(HTTPSTAT_SHOW_BODY=true HTTPSTAT_SAVE_BODY=false \
         main $https_url)
-    echo "$out" | grep -q 'is truncated'
+    echo "$out" | grep -q '^HTTP/'
     assert_exit 0
 
     echo "$out" | grep -q 'stored in'

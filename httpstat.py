@@ -1,12 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 # References:
 # man curl
 # https://curl.haxx.se/libcurl/c/curl_easy_getinfo.html
 # https://curl.haxx.se/libcurl/c/easy_getinfo_options.html
 # http://blog.kenweiner.com/2014/11/http-request-timings-with-curl.html
-
-from __future__ import print_function
 
 import os
 import json
@@ -17,12 +15,6 @@ import subprocess
 
 
 __version__ = '1.3.2'
-
-
-PY3 = sys.version_info >= (3,)
-
-if PY3:
-    xrange = range
 
 
 # Env class is copied from https://github.com/reorx/getenv/blob/master/getenv.py
@@ -108,7 +100,7 @@ cyan = make_color(36)
 bold = make_color(1)
 underline = make_color(4)
 
-grayscale = {(i - 232): make_color('38;5;' + str(i)) for i in xrange(232, 256)}
+grayscale = {(i - 232): make_color('38;5;' + str(i)) for i in range(232, 256)}
 
 
 def quit(s, code=0):
@@ -222,8 +214,7 @@ def main():
     lg.debug('cmd: %s', cmd)
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=cmd_env)
     out, err = p.communicate()
-    if PY3:
-        out, err = out.decode(), err.decode()
+    out, err = out.decode(errors='replace'), err.decode(errors='replace')
     lg.debug('out: %s', out)
 
     # print stderr
