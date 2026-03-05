@@ -33,8 +33,7 @@ https_url="https://http2.akamai.com"
 check_url "$http_url"
 check_url "$https_url"
     
-for pybin in python python3; do
-#for pybin in python; do
+for pybin in python; do
     echo
     echo "# Test in $pybin"
 

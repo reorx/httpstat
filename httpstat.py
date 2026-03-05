@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-# coding: utf-8
+#!/usr/bin/env python
+from __future__ import annotations
 # References:
 # man curl
 # https://curl.haxx.se/libcurl/c/curl_easy_getinfo.html
@@ -14,19 +14,18 @@ import tempfile
 import subprocess
 
 
-__version__ = '1.3.2'
+__version__ = '2.0.0'
 
 
-# Env class is copied from https://github.com/reorx/getenv/blob/master/getenv.py
-class Env(object):
+class Env:
     prefix = 'HTTPSTAT'
-    _instances = []
+    _instances: list['Env'] = []
 
-    def __init__(self, key):
+    def __init__(self, key: str):
         self.key = key.format(prefix=self.prefix)
         Env._instances.append(self)
 
-    def get(self, default=None):
+    def get(self, default: str | None = None) -> str | None:
         return os.environ.get(self.key, default)
 
 
@@ -85,8 +84,7 @@ def make_color(code):
     def color_func(s):
         if not ISATTY:
             return s
-        tpl = '\x1b[{}m{}\x1b[0m'
-        return tpl.format(code, s)
+        return f'\x1b[{code}m{s}\x1b[0m'
     return color_func
 
 
@@ -100,10 +98,10 @@ cyan = make_color(36)
 bold = make_color(1)
 underline = make_color(4)
 
-grayscale = {(i - 232): make_color('38;5;' + str(i)) for i in range(232, 256)}
+grayscale = {(i - 232): make_color(f'38;5;{i}') for i in range(232, 256)}
 
 
-def quit(s, code=0):
+def _exit(s, code=0):
     if s is not None:
         print(s)
     sys.exit(code)
@@ -145,7 +143,7 @@ def main():
     args = sys.argv[1:]
     if not args:
         print_help()
-        quit(None, 0)
+        _exit(None, 0)
 
     # get envs
     show_body = 'true' in ENV_SHOW_BODY.get('false').lower()
@@ -165,7 +163,7 @@ def main():
     lg = logging.getLogger('httpstat')
 
     # log envs
-    lg.debug('Envs:\n%s', '\n'.join('  {}={}'.format(i.key, i.get('')) for i in Env._instances))
+    lg.debug('Envs:\n%s', '\n'.join(f'  {i.key}={i.get("")}' for i in Env._instances))
     lg.debug('Flags: %s', dict(
         show_body=show_body,
         show_ip=show_ip,
@@ -179,10 +177,10 @@ def main():
     url = args[0]
     if url in ['-h', '--help']:
         print_help()
-        quit(None, 0)
+        _exit(None, 0)
     elif url == '--version':
-        print('httpstat {}'.format(__version__))
-        quit(None, 0)
+        print(f'httpstat {__version__}')
+        _exit(None, 0)
 
     curl_args = args[1:]
 
@@ -195,7 +193,7 @@ def main():
     ]
     for i in exclude_options:
         if i in curl_args:
-            quit(yellow('Error: {} is not allowed in extra curl args'.format(i)), 1)
+            _exit(yellow(f'Error: {i} is not allowed in extra curl args'), 1)
 
     # tempfile for output
     bodyf = tempfile.NamedTemporaryFile(delete=False)
@@ -226,16 +224,16 @@ def main():
         _cmd[2] = '<output-format>'
         _cmd[4] = '<tempfile>'
         _cmd[6] = '<tempfile>'
-        print('> {}'.format(' '.join(_cmd)))
-        quit(yellow('curl error: {}'.format(err)), p.returncode)
+        print(f'> {" ".join(_cmd)}')
+        _exit(yellow(f'curl error: {err}'), p.returncode)
 
     # parse output
     try:
         d = json.loads(out)
     except ValueError as e:
-        print(yellow('Could not decode json: {}'.format(e)))
+        print(yellow(f'Could not decode json: {e}'))
         print('curl result:', p.returncode, grayscale[16](out), grayscale[16](err))
-        quit(None, 1)
+        _exit(None, 1)
 
     # convert time_ metrics from seconds to milliseconds
     for k in d:
@@ -252,7 +250,7 @@ def main():
                 # https://curl.se/bug/?i=2495
                 d[k] = int(v / 1000)
             else:
-                raise TypeError('{} value type is invalid: {}'.format(k, type(v)))
+                raise TypeError(f'{k} value type is invalid: {type(v)}')
 
     # calculate ranges
     d.update(
@@ -266,15 +264,11 @@ def main():
     # print json if metrics_only is enabled
     if metrics_only:
         print(json.dumps(d, indent=2))
-        quit(None, 0)
+        _exit(None, 0)
 
     # ip
     if show_ip:
-        s = 'Connected to {}:{} from {}:{}'.format(
-            cyan(d['remote_ip']), cyan(d['remote_port']),
-            d['local_ip'], d['local_port'],
-        )
-        print(s)
+        print(f"Connected to {cyan(d['remote_ip'])}:{cyan(d['remote_port'])} from {d['local_ip']}:{d['local_port']}")
         print()
 
     # print header & body summary
@@ -304,15 +298,15 @@ def main():
         if body_len > body_limit:
             print(body[:body_limit] + cyan('...'))
             print()
-            s = '{} is truncated ({} out of {})'.format(green('Body'), body_limit, body_len)
+            s = f"{green('Body')} is truncated ({body_limit} out of {body_len})"
             if save_body:
-                s += ', stored in: {}'.format(bodyf.name)
+                s += f', stored in: {bodyf.name}'
             print(s)
         else:
             print(body)
     else:
         if save_body:
-            print('{} stored in: {}'.format(green('Body'), bodyf.name))
+            print(f"{green('Body')} stored in: {bodyf.name}")
 
     # remove body file
     if not save_body:
@@ -331,10 +325,10 @@ def main():
     template = '\n'.join(tpl_parts)
 
     def fmta(s):
-        return cyan('{:^7}'.format(str(s) + 'ms'))
+        return cyan(f'{str(s) + "ms":^7}')
 
     def fmtb(s):
-        return cyan('{:<7}'.format(str(s) + 'ms'))
+        return cyan(f'{str(s) + "ms":<7}')
 
     stat = template.format(
         # a
@@ -355,8 +349,7 @@ def main():
 
     # speed, originally bytes per second
     if show_speed:
-        print('speed_download: {:.1f} KiB/s, speed_upload: {:.1f} KiB/s'.format(
-            d['speed_download'] / 1024, d['speed_upload'] / 1024))
+        print(f"speed_download: {d['speed_download'] / 1024:.1f} KiB/s, speed_upload: {d['speed_upload'] / 1024:.1f} KiB/s")
 
 
 if __name__ == '__main__':
