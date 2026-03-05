@@ -33,3 +33,8 @@ py-modules = ["httpstat"]
 
 [tool.setuptools.dynamic]
 version = { attr = "httpstat.__version__" }
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]

@@ -108,4 +108,41 @@ for pybin in python; do
 
     echo "$out" | grep -q 'stored in'
     assert_exit 1
+
+    title "--format json produces valid JSON with schema_version"
+    out=$(main $http_url --format json)
+    echo "$out" | python -c "import sys,json; d=json.load(sys.stdin); assert d['schema_version']==1"
+    assert_exit 0
+
+    title "--format jsonl produces single-line JSON"
+    out=$(main $http_url --format jsonl)
+    lines=$(echo "$out" | wc -l | tr -d ' ')
+    [ "$lines" -eq 1 ]
+    assert_exit 0
+
+    title "--slo total=1 triggers exit code 4"
+    main_silent $http_url --slo total=1
+    assert_exit 4
+
+    title "--save writes file"
+    tmpout="/tmp/httpstat_e2e_test_$$.json"
+    main_silent $http_url --format json --save "$tmpout"
+    assert_exit 0
+    python -c "import json; d=json.load(open('$tmpout')); assert d['schema_version']==1"
+    assert_exit 0
+    rm -f "$tmpout"
+
+    title "NO_COLOR disables ANSI escapes"
+    out=$(NO_COLOR=1 main $http_url)
+    if echo "$out" | python -c "import sys; sys.exit(0 if '\x1b[' in sys.stdin.read() else 1)" 2>/dev/null; then
+        echo "Failed, found ANSI escapes"
+        exit 1
+    else
+        echo OK
+    fi
+
+    title "HTTPSTAT_METRICS_ONLY backward compat with --format"
+    out=$(HTTPSTAT_METRICS_ONLY=true main $http_url)
+    echo "$out" | python -c "import sys,json; json.load(sys.stdin)"
+    assert_exit 0
 done
