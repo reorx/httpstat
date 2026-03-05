@@ -12,6 +12,7 @@ import sys
 import logging
 import tempfile
 import subprocess
+from typing import NoReturn, overload
 
 
 __version__ = '2.0.0'
@@ -25,6 +26,10 @@ class Env:
         self.key = key.format(prefix=self.prefix)
         Env._instances.append(self)
 
+    @overload
+    def get(self, default: str) -> str: ...
+    @overload
+    def get(self, default: None = None) -> str | None: ...
     def get(self, default: str | None = None) -> str | None:
         return os.environ.get(self.key, default)
 
@@ -101,7 +106,20 @@ underline = make_color(4)
 grayscale = {(i - 232): make_color(f'38;5;{i}') for i in range(232, 256)}
 
 
-def _exit(s, code=0):
+_TRUTHY = frozenset(('1', 'true', 'yes', 'on'))
+_FALSY = frozenset(('0', 'false', 'no', 'off'))
+
+
+def parse_bool(value: str) -> bool:
+    v = value.strip().lower()
+    if v in _TRUTHY:
+        return True
+    if v in _FALSY:
+        return False
+    raise ValueError(f'invalid boolean value: {value!r}')
+
+
+def _exit(s, code=0) -> NoReturn:
     if s is not None:
         print(s)
     sys.exit(code)
@@ -146,13 +164,13 @@ def main():
         _exit(None, 0)
 
     # get envs
-    show_body = 'true' in ENV_SHOW_BODY.get('false').lower()
-    show_ip = 'true' in ENV_SHOW_IP.get('true').lower()
-    show_speed = 'true'in ENV_SHOW_SPEED.get('false').lower()
-    save_body = 'true' in ENV_SAVE_BODY.get('true').lower()
+    show_body = parse_bool(ENV_SHOW_BODY.get('false'))
+    show_ip = parse_bool(ENV_SHOW_IP.get('true'))
+    show_speed = parse_bool(ENV_SHOW_SPEED.get('false'))
+    save_body = parse_bool(ENV_SAVE_BODY.get('true'))
     curl_bin = ENV_CURL_BIN.get('curl')
-    metrics_only = 'true' in ENV_METRICS_ONLY.get('false').lower()
-    is_debug = 'true' in ENV_DEBUG.get('false').lower()
+    metrics_only = parse_bool(ENV_METRICS_ONLY.get('false'))
+    is_debug = parse_bool(ENV_DEBUG.get('false'))
 
     # configure logging
     if is_debug:
@@ -202,154 +220,160 @@ def main():
     headerf = tempfile.NamedTemporaryFile(delete=False)
     headerf.close()
 
-    # run cmd
-    cmd_env = os.environ.copy()
-    cmd_env.update(
-        LC_ALL='C',
-    )
-    cmd_core = [curl_bin, '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S']
-    cmd = cmd_core + curl_args + [url]
-    lg.debug('cmd: %s', cmd)
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=cmd_env)
-    out, err = p.communicate()
-    out, err = out.decode(errors='replace'), err.decode(errors='replace')
-    lg.debug('out: %s', out)
-
-    # print stderr
-    if p.returncode == 0:
-        if err:
-            print(grayscale[16](err))
-    else:
-        _cmd = list(cmd)
-        _cmd[2] = '<output-format>'
-        _cmd[4] = '<tempfile>'
-        _cmd[6] = '<tempfile>'
-        print(f'> {" ".join(_cmd)}')
-        _exit(yellow(f'curl error: {err}'), p.returncode)
-
-    # parse output
     try:
-        d = json.loads(out)
-    except ValueError as e:
-        print(yellow(f'Could not decode json: {e}'))
-        print('curl result:', p.returncode, grayscale[16](out), grayscale[16](err))
-        _exit(None, 1)
+        # run cmd
+        cmd_env = os.environ.copy()
+        cmd_env.update(
+            LC_ALL='C',
+        )
+        cmd_core = [curl_bin, '-w', curl_format, '-D', headerf.name, '-o', bodyf.name, '-s', '-S']
+        cmd = cmd_core + curl_args + [url]
+        lg.debug('cmd: %s', cmd)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=cmd_env)
+        out, err = p.communicate()
+        out, err = out.decode(errors='replace'), err.decode(errors='replace')
+        lg.debug('out: %s', out)
 
-    # convert time_ metrics from seconds to milliseconds
-    for k in d:
-        if k.startswith('time_'):
-            v = d[k]
-            # Convert time_ values to milliseconds in int
-            if isinstance(v, float):
-                # Before 7.61.0, time values are represented as seconds in float
-                d[k] = int(v * 1000)
-            elif isinstance(v, int):
-                # Starting from 7.61.0, libcurl uses microsecond in int
-                # to return time values, references:
-                # https://daniel.haxx.se/blog/2018/07/11/curl-7-61-0/
-                # https://curl.se/bug/?i=2495
-                d[k] = int(v / 1000)
+        # print stderr
+        if p.returncode == 0:
+            if err:
+                print(grayscale[16](err))
+        else:
+            _cmd = list(cmd)
+            _cmd[2] = '<output-format>'
+            _cmd[4] = '<tempfile>'
+            _cmd[6] = '<tempfile>'
+            print(f'> {" ".join(_cmd)}')
+            _exit(yellow(f'curl error: {err}'), p.returncode)
+
+        # parse output
+        try:
+            d = json.loads(out)
+        except ValueError as e:
+            print(yellow(f'Could not decode json: {e}'))
+            print('curl result:', p.returncode, grayscale[16](out), grayscale[16](err))
+            _exit(None, 1)
+
+        # convert time_ metrics from seconds to milliseconds
+        for k in d:
+            if k.startswith('time_'):
+                v = d[k]
+                # Convert time_ values to milliseconds in int
+                if isinstance(v, float):
+                    # Before 7.61.0, time values are represented as seconds in float
+                    d[k] = int(v * 1000)
+                elif isinstance(v, int):
+                    # Starting from 7.61.0, libcurl uses microsecond in int
+                    # to return time values, references:
+                    # https://daniel.haxx.se/blog/2018/07/11/curl-7-61-0/
+                    # https://curl.se/bug/?i=2495
+                    d[k] = int(v / 1000)
+                else:
+                    raise TypeError(f'{k} value type is invalid: {type(v)}')
+
+        # calculate ranges
+        d.update(
+            range_dns=d['time_namelookup'],
+            range_connection=d['time_connect'] - d['time_namelookup'],
+            range_ssl=d['time_pretransfer'] - d['time_connect'],
+            range_server=d['time_starttransfer'] - d['time_pretransfer'],
+            range_transfer=d['time_total'] - d['time_starttransfer'],
+        )
+
+        # print json if metrics_only is enabled
+        if metrics_only:
+            print(json.dumps(d, indent=2))
+            _exit(None, 0)
+
+        # ip
+        if show_ip:
+            print(f"Connected to {cyan(d['remote_ip'])}:{cyan(d['remote_port'])} from {d['local_ip']}:{d['local_port']}")
+            print()
+
+        # print header & body summary
+        with open(headerf.name, 'r') as f:
+            headers = f.read().strip()
+
+        for loop, line in enumerate(headers.split('\n')):
+            if loop == 0:
+                p1, p2 = tuple(line.split('/'))
+                print(green(p1) + grayscale[14]('/') + cyan(p2))
             else:
-                raise TypeError(f'{k} value type is invalid: {type(v)}')
+                pos = line.find(':')
+                print(grayscale[14](line[:pos + 1]) + cyan(line[pos + 1:]))
 
-    # calculate ranges
-    d.update(
-        range_dns=d['time_namelookup'],
-        range_connection=d['time_connect'] - d['time_namelookup'],
-        range_ssl=d['time_pretransfer'] - d['time_connect'],
-        range_server=d['time_starttransfer'] - d['time_pretransfer'],
-        range_transfer=d['time_total'] - d['time_starttransfer'],
-    )
-
-    # print json if metrics_only is enabled
-    if metrics_only:
-        print(json.dumps(d, indent=2))
-        _exit(None, 0)
-
-    # ip
-    if show_ip:
-        print(f"Connected to {cyan(d['remote_ip'])}:{cyan(d['remote_port'])} from {d['local_ip']}:{d['local_port']}")
         print()
 
-    # print header & body summary
-    with open(headerf.name, 'r') as f:
-        headers = f.read().strip()
-    # remove header file
-    lg.debug('rm header file %s', headerf.name)
-    os.remove(headerf.name)
+        # body
+        if show_body:
+            body_limit = 1024
+            with open(bodyf.name, 'r') as f:
+                body = f.read().strip()
+            body_len = len(body)
 
-    for loop, line in enumerate(headers.split('\n')):
-        if loop == 0:
-            p1, p2 = tuple(line.split('/'))
-            print(green(p1) + grayscale[14]('/') + cyan(p2))
+            if body_len > body_limit:
+                print(body[:body_limit] + cyan('...'))
+                print()
+                s = f"{green('Body')} is truncated ({body_limit} out of {body_len})"
+                if save_body:
+                    s += f', stored in: {bodyf.name}'
+                print(s)
+            else:
+                print(body)
         else:
-            pos = line.find(':')
-            print(grayscale[14](line[:pos + 1]) + cyan(line[pos + 1:]))
-
-    print()
-
-    # body
-    if show_body:
-        body_limit = 1024
-        with open(bodyf.name, 'r') as f:
-            body = f.read().strip()
-        body_len = len(body)
-
-        if body_len > body_limit:
-            print(body[:body_limit] + cyan('...'))
-            print()
-            s = f"{green('Body')} is truncated ({body_limit} out of {body_len})"
             if save_body:
-                s += f', stored in: {bodyf.name}'
-            print(s)
+                print(f"{green('Body')} stored in: {bodyf.name}")
+
+        # print stat
+        if url.startswith('https://'):
+            template = https_template
         else:
-            print(body)
-    else:
-        if save_body:
-            print(f"{green('Body')} stored in: {bodyf.name}")
+            template = http_template
 
-    # remove body file
-    if not save_body:
-        lg.debug('rm body file %s', bodyf.name)
-        os.remove(bodyf.name)
+        # colorize template first line
+        tpl_parts = template.split('\n')
+        tpl_parts[0] = grayscale[16](tpl_parts[0])
+        template = '\n'.join(tpl_parts)
 
-    # print stat
-    if url.startswith('https://'):
-        template = https_template
-    else:
-        template = http_template
+        def fmta(s):
+            return cyan(f'{str(s) + "ms":^7}')
 
-    # colorize template first line
-    tpl_parts = template.split('\n')
-    tpl_parts[0] = grayscale[16](tpl_parts[0])
-    template = '\n'.join(tpl_parts)
+        def fmtb(s):
+            return cyan(f'{str(s) + "ms":<7}')
 
-    def fmta(s):
-        return cyan(f'{str(s) + "ms":^7}')
+        stat = template.format(
+            # a
+            a0000=fmta(d['range_dns']),
+            a0001=fmta(d['range_connection']),
+            a0002=fmta(d['range_ssl']),
+            a0003=fmta(d['range_server']),
+            a0004=fmta(d['range_transfer']),
+            # b
+            b0000=fmtb(d['time_namelookup']),
+            b0001=fmtb(d['time_connect']),
+            b0002=fmtb(d['time_pretransfer']),
+            b0003=fmtb(d['time_starttransfer']),
+            b0004=fmtb(d['time_total']),
+        )
+        print()
+        print(stat)
 
-    def fmtb(s):
-        return cyan(f'{str(s) + "ms":<7}')
-
-    stat = template.format(
-        # a
-        a0000=fmta(d['range_dns']),
-        a0001=fmta(d['range_connection']),
-        a0002=fmta(d['range_ssl']),
-        a0003=fmta(d['range_server']),
-        a0004=fmta(d['range_transfer']),
-        # b
-        b0000=fmtb(d['time_namelookup']),
-        b0001=fmtb(d['time_connect']),
-        b0002=fmtb(d['time_pretransfer']),
-        b0003=fmtb(d['time_starttransfer']),
-        b0004=fmtb(d['time_total']),
-    )
-    print()
-    print(stat)
-
-    # speed, originally bytes per second
-    if show_speed:
-        print(f"speed_download: {d['speed_download'] / 1024:.1f} KiB/s, speed_upload: {d['speed_upload'] / 1024:.1f} KiB/s")
+        # speed, originally bytes per second
+        if show_speed:
+            print(f"speed_download: {d['speed_download'] / 1024:.1f} KiB/s, speed_upload: {d['speed_upload'] / 1024:.1f} KiB/s")
+    finally:
+        # always clean header file; only clean body file if not saving
+        for path in (headerf.name,):
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+        if not save_body:
+            lg.debug('rm body file %s', bodyf.name)
+            try:
+                os.remove(bodyf.name)
+            except OSError:
+                pass
 
 
 if __name__ == '__main__':
