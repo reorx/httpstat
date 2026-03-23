@@ -210,6 +210,18 @@ def build_json_result(url: str, d: dict, headers_text: str,
 
     ok = exit_code == 0
 
+    # Parse headers into dict (skip status line)
+    headers_dict: dict[str, str] = {}
+    for line in headers_text.split('\n')[1:]:
+        line = line.strip().rstrip('\r')
+        if not line:
+            continue
+        pos = line.find(':')
+        if pos != -1:
+            key = line[:pos].strip()
+            value = line[pos + 1:].strip()
+            headers_dict[key] = value
+
     result = {
         'schema_version': 1,
         'url': url,
@@ -220,7 +232,7 @@ def build_json_result(url: str, d: dict, headers_text: str,
             'status_code': status_code,
             'remote_ip': d.get('remote_ip', ''),
             'remote_port': d.get('remote_port', ''),
-            'headers': headers_text,
+            'headers': headers_dict,
         },
         'timings_ms': {
             'dns': d['range_dns'],

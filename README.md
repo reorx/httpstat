@@ -68,7 +68,7 @@ httpstat httpbin.org/get --format json
     "status_code": 200,
     "remote_ip": "...",
     "remote_port": "443",
-    "headers": "..."
+    "headers": {"Content-Type": "application/json", "Server": "nginx", "...": "..."}
   },
   "timings_ms": {
     "dns": 5, "connect": 10, "tls": 15,
