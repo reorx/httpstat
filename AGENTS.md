@@ -46,7 +46,7 @@
       "status_code": 200,
       "remote_ip": "...",
       "remote_port": "...",
-      "headers": "..."
+      "headers": {"Content-Type": "application/json", "Server": "nginx", "...": "..."}
     },
     "timings_ms": {
       "dns": 5,
