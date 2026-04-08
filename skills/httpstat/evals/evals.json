@@ -1,0 +1,23 @@
+{
+  "skill_name": "httpstat",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Our /api/v2/search endpoint at https://httpbin.org/delay/2 is taking forever, can you figure out what's going on?",
+      "expected_output": "Should run httpstat with --format json, identify server processing as the dominant bottleneck (~2s), and explain that the delay is server-side, not network.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "I have this curl command: curl -X GET https://httpbin.org/get -H 'Accept: application/json' — can you show me where the time is being spent?",
+      "expected_output": "Should convert the curl command to httpstat, run it, break down timings by phase, and explain the results.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Can you check if there's a noticeable TLS overhead when hitting https://www.google.com vs http://www.google.com?",
+      "expected_output": "Should run httpstat on both URLs, compare TLS timing, and quantify the overhead. Should note that http may redirect to https.",
+      "files": []
+    }
+  ]
+}

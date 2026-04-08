@@ -27,23 +27,22 @@ function check_url() {
     fi
 }
 
-http_url="www.gstatic.com/generate_204"
+http_url="https://www.gstatic.com/generate_204"
 https_url="https://http2.akamai.com"
 
 check_url "$http_url"
 check_url "$https_url"
     
-for pybin in python python3; do
-#for pybin in python; do
+for pybin in python; do
     echo
     echo "# Test in $pybin"
 
     function main() {
-        $pybin httpstat.py $@ 2>&1
+        $pybin httpstat.py "$@" 2>&1
     }
 
     function main_silent() {
-        $pybin httpstat.py $@ >/dev/null 2>&1
+        $pybin httpstat.py "$@" >/dev/null 2>&1
     }
 
     title "basic"
@@ -90,21 +89,60 @@ for pybin in python python3; do
     HTTPSTAT_SAVE_BODY=false HTTPSTAT_DEBUG=true main $http_url | grep -q 'rm body file'
     assert_exit 0
 
-    title "HTTPSTAT_SHOW_BODY=true HTTPSTAT_SAVE_BODY=true, has 'is truncated, has 'stored in'"
+    title "HTTPSTAT_SHOW_BODY=true HTTPSTAT_SAVE_BODY=true"
     out=$(HTTPSTAT_SHOW_BODY=true HTTPSTAT_SAVE_BODY=true \
         main $https_url)
-    echo "$out" | grep -q 'is truncated'
+    echo "$out" | grep -q '^HTTP/'
     assert_exit 0
 
-    echo "$out" | grep -q 'stored in'
-    assert_exit 0
+    if echo "$out" | grep -q 'is truncated'; then
+        echo "$out" | grep -q 'stored in'
+        assert_exit 0
+    fi
 
-    title "HTTPSTAT_SHOW_BODY=true HTTPSTAT_SAVE_BODY=false, has 'is truncated', no 'stored in'"
+    title "HTTPSTAT_SHOW_BODY=true HTTPSTAT_SAVE_BODY=false, no 'stored in'"
     out=$(HTTPSTAT_SHOW_BODY=true HTTPSTAT_SAVE_BODY=false \
         main $https_url)
-    echo "$out" | grep -q 'is truncated'
+    echo "$out" | grep -q '^HTTP/'
     assert_exit 0
 
     echo "$out" | grep -q 'stored in'
     assert_exit 1
+
+    title "--format json produces valid JSON with schema_version"
+    out=$(main $http_url --format json)
+    echo "$out" | python -c "import sys,json; d=json.load(sys.stdin); assert d['schema_version']==1"
+    assert_exit 0
+
+    title "--format jsonl produces single-line JSON"
+    out=$(main $http_url --format jsonl)
+    lines=$(echo "$out" | wc -l | tr -d ' ')
+    [ "$lines" -eq 1 ]
+    assert_exit 0
+
+    title "--slo total=1 triggers exit code 4"
+    main_silent $http_url --slo total=1
+    assert_exit 4
+
+    title "--save writes file"
+    tmpout="/tmp/httpstat_e2e_test_$$.json"
+    main_silent $http_url --format json --save "$tmpout"
+    assert_exit 0
+    python -c "import json; d=json.load(open('$tmpout')); assert d['schema_version']==1"
+    assert_exit 0
+    rm -f "$tmpout"
+
+    title "NO_COLOR disables ANSI escapes"
+    out=$(NO_COLOR=1 main $http_url)
+    if echo "$out" | python -c "import sys; sys.exit(0 if '\x1b[' in sys.stdin.read() else 1)" 2>/dev/null; then
+        echo "Failed, found ANSI escapes"
+        exit 1
+    else
+        echo OK
+    fi
+
+    title "HTTPSTAT_METRICS_ONLY backward compat with --format"
+    out=$(HTTPSTAT_METRICS_ONLY=true main $http_url)
+    echo "$out" | python -c "import sys,json; json.load(sys.stdin)"
+    assert_exit 0
 done

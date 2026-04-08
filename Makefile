@@ -1,4 +1,4 @@
-.PHONY: test build
+.PHONY: test build clean
 
 test:
 	@bash httpstat_test.sh
@@ -7,10 +7,7 @@ clean:
 	rm -rf build dist *.egg-info
 
 build:
-	python setup.py build
+	uv build
 
-build-dist:
-	python setup.py sdist bdist_wheel
-
-publish: clean build-dist
-	python -m twine upload dist/*
+publish: clean build
+	uv publish
