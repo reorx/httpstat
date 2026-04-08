@@ -85,10 +85,10 @@
 - 新增 `--save <path>` 将结果写入文件（适合多步 Agent 工作流复用）。
 - `--format json` 已天然抑制装饰文本，不另设 `--quiet`。
 
-### Phase 2：Skill 层（后续，待 JSON 输出稳定后）
-- 待 Phase 1 落地并有真实 Agent 消费场景后再设计。
-- 方向：封装 httpstat JSON 输出 + 诊断推理（bottleneck_stage、next_actions）。
-- 不在本轮实施范围内。
+### Phase 2：Skill 层（进行中）
+- `skills/httpstat/SKILL.md`：已完成初版诊断 skill，覆盖自动安装、瓶颈识别、SLO 阈值、curl 转换。
+- `skills/httpstat/evals/evals.json`：3 个评估用例，经过两轮迭代验证。
+- 待补充：诊断推理输出结构（bottleneck_stage、next_actions）尚未结构化为 JSON，目前以自然语言分析为主。
 
 
 ## 4) 完成标准（Definition of Done）
