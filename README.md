@@ -13,6 +13,7 @@ It is a **single file🌟** Python script that has **no dependency👏** and is 
 - **SLO threshold checking** — `--slo total=500,connect=100` exits with code 4 on violation
 - **Save results to file** — `--save path.json` for multi-step workflows
 - **NO_COLOR support** — respects the [NO_COLOR](https://no-color.org) convention
+- **Agent skill** — built-in [skill](skills/httpstat/SKILL.md) for agent-assisted HTTP performance diagnostics
 
 
 ## Installation
@@ -26,6 +27,18 @@ There are three ways to get `httpstat`:
 - Through homebrew (macOS only): `brew install httpstat`
 
 > For Windows users, @davecheney's [Go version](https://github.com/davecheney/httpstat) is suggested. → [download link](https://github.com/davecheney/httpstat/releases)
+
+## Skills
+
+httpstat ships with an agent [skill](skills/httpstat/SKILL.md) that teaches AI coding assistants (Claude Code, Cursor, etc.) how to use httpstat for HTTP performance diagnostics — automatic installation, bottleneck identification, and actionable fix suggestions.
+
+Install the skill into your project:
+
+```bash
+npx skills add reorx/httpstat
+```
+
+Once installed, your agent will automatically use httpstat when you ask questions like "why is this API slow?" or "debug this endpoint's latency".
 
 ## Usage
 
